@@ -18,7 +18,11 @@
         android:label="@string/title"
         android:theme="@style/Theme.AppCompat">
         <activity
-            android:name=".HelpView"
+            android:name=".SettingsActivity2"
+            android:exported="false"
+            android:label="@string/title_activity_settings2" />
+        <activity
+            android:name=".HelpActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
@@ -28,6 +32,7 @@
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.PREFERENCE" />
             </intent-filter>

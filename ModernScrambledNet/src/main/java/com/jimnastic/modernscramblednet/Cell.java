@@ -347,12 +347,10 @@ class Cell {
 	}
 
 	/**
-	 * Query whether this cell has a connection in the given direction(s).
+	 * Query whether this cell has a connection in the given direction(s)
 	 * 
-	 * @param d
-	 *            Direction(s) to check.
-	 * @return true iff the cell is connected in all the given directions; else
-	 *         false.
+	 * @param d	Direction(s) to check
+	 * @return	True if the cell is connected in all the given directions; else false
 	 */
 	boolean hasConnection(Dir d) {
 		return !isRotated()
@@ -360,10 +358,10 @@ class Cell {
 	}
 
 	/**
-	 * Determine how many connections this cell has outwards (ie. ignoring
-	 * whether there is a matching inward connection in the next cell).
+	 * Determine how many connections this cell has outwards (ie. ignoring whether there is a
+	 * matching inward connection in the next cell)
 	 * 
-	 * @return The number of outward connections from this cell.
+	 * @return The number of outward connections from this cell
 	 */
 	int numDirs() {
 		if (connectedDirs == Dir.NONE)
@@ -595,19 +593,17 @@ class Cell {
 	}
 
 	/**
-	 * Query whether this cell is currently rotated off the orthogonal.
+	 * Query whether this cell is currently rotated off the orthogonal
 	 * 
-	 * @return true iff the cell is not at its base angle.
+	 * @return True if the cell is not at its base angle
 	 */
 	boolean isRotated() {
 		return rotateTarget != 0;
 	}
 
-	/**
-	 * Set the highlight state of the cell.
-	 */
+	//Set the highlight state of the cell
 	void doHighlight() {
-		// If one is currently running, just start over.
+		// If one is currently running, just start over
 		highlightOn = true;
 		highlightStart = System.currentTimeMillis();
 		highlightPos = 0;
@@ -867,20 +863,17 @@ class Cell {
 	}
 
 	/**
-	 * This method is called to ask the cell to draw its active data blips. This
-	 * happens in a separate pass, so that blips which are in transition from
-	 * one cell to another don't get cropped by the drawing of the next cell.
+	 * This method is called to ask the cell to draw its active data blips. This happens in a
+	 * separate pass, so that blips which are in transition from one cell to another don't get
+	 * cropped by the drawing of the next cell
 	 * 
-	 * @param canvas
-	 *            Canvas to draw into
-	 * @param frac
-	 *            Fractional position of the data blips, if any, along whatever
-	 *            connection leg they're on.
+	 * @param canvas	Canvas to draw into
+	 * @param frac		Fractional position of the data blips, if any, along whatever connection leg
+	 *                  they're on
 	 */
 	protected void doDrawBlips(Canvas canvas, float frac) {
-		// Normal cable sections and the server get blips, including the
-		// section of cable going into a terminal cell. Otherwise, terminals
-		// get special treatment.
+		// Normal cable sections and the server get blips, including the section of cable going into
+		// a terminal cell. Otherwise, terminals get special treatment
 		if (isRoot || numDirs() > 1 || (numDirs() == 1 && frac < 0.3f))
 			drawBlips(canvas, frac);
 		else
@@ -888,34 +881,28 @@ class Cell {
 	}
 
 	/**
-	 * This method is called to ask the cell to draw its active data blips. This
-	 * happens in a separate pass, so that blips which are in transition from
-	 * one cell to another don't get cropped by the drawing of the next cell.
+	 * This method is called to ask the cell to draw its active data blips. This happens in a
+	 * separate pass, so that blips which are in transition from one cell to another don't get
+	 * cropped by the drawing of the next cell
 	 * 
-	 * @param canvas
-	 *            Canvas to draw into
-	 * @param frac
-	 *            Fractional position of the data blips, if any, along whatever
-	 *            connection leg they're on.
+	 * @param canvas	Canvas to draw into
+	 * @param frac		Fractional position of the data blips, if any, along whatever connection
+	 *                  leg they're on.
 	 */
 	private void drawBlips(Canvas canvas, float frac) {
-		// We don't check stateValid. Blips are always drawn.
-
-		// But if this cell's wiring is invisible, then its blips need
-		// to be too.
+		// We don't check stateValid. Blips are always drawn. But if this cell's wiring is
+		// invisible, then its blips need to be too
 		if (isBlind)
 			return;
 
 		final int sx = cellLeft;
 		final int sy = cellTop;
 
-		// Note that we don't do any clipping. A blip which is passing
-		// from one cell to another needs to be drawn overlapping both
-		// cells.
+		// Note that we don't do any clipping. A blip which is passing from one cell to another
+		// needs to be drawn overlapping both cells
 
-		// Now draw in all blips. We use "glow-in" / "glow-out" images
-		// for the server; otherwise blips, whose colour depends on whether
-		// this cell is connected.
+		// Now draw in all blips. We use "glow-in" / "glow-out" images for the server; otherwise
+		// blips, whose colour depends on whether this cell is connected
 		final Image[] blips = isRoot ? BLIP_T_IMAGES
 				: isConnected ? BLIP_IMAGES : BLIP_G_IMAGES;
 		final int nblips = blips.length;
@@ -925,19 +912,22 @@ class Cell {
 		int indexOut = Math.round((float) (nblips - 1) * (1 - frac)) % nblips;
 		if (indexOut < 0)
 			indexOut = 0;
-		for (int c = 0; c < Dir.cardinals.length; ++c) {
+		for (int c = 0; c < Dir.cardinals.length; ++c)
+		{
 			Dir d = Dir.cardinals[c];
 			int ord = d.ordinal();
 			final int xoff = Dir.cardinalOffs[c][0];
 			final int yoff = Dir.cardinalOffs[c][1];
-			if ((blipsIncoming & ord) != 0) {
+			if ((blipsIncoming & ord) != 0)
+			{
 				final float inp = (1.0f - frac) * cellWidth / 2f;
 				final float x = sx + xoff * inp;
 				final float y = sy + yoff * inp;
 				Image blipImage = blips[indexIn];
 				canvas.drawBitmap(blipImage.bitmap, x, y, cellPaint);
 			}
-			if ((blipsOutgoing & ord) != 0) {
+			if ((blipsOutgoing & ord) != 0)
+			{
 				final float outp = frac * cellWidth / 2f;
 				final float x = sx + xoff * outp;
 				final float y = sy + yoff * outp;
@@ -948,18 +938,15 @@ class Cell {
 	}
 
 	/**
-	 * This method is called to ask the cell to draw its active data blips. This
-	 * happens in a separate pass, so that blips which are in transition from
-	 * one cell to another don't get cropped by the drawing of the next cell.
+	 * This method is called to ask the cell to draw its active data blips. This happens in a
+	 * separate pass, so that blips which are in transition from one cell to another don't get
+	 * cropped by the drawing of the next cell
 	 * 
-	 * @param canvas
-	 *            Canvas to draw into
+	 * @param canvas	Canvas to draw into
 	 */
 	private void drawTermData(Canvas canvas) {
-		// We don't check stateValid. Blips are always drawn.
-
-		// If this cell is invisible or not connected, or there's no
-		// blip, then nothing gets drawn.
+		// We don't check stateValid. Blips are always drawn
+		// If this cell is invisible or not connected, or there's no blip, then nothing gets drawn
 		if (isBlind || !isConnected || blipsIncoming == 0)
 			return;
 
@@ -969,28 +956,25 @@ class Cell {
 		cellPaint.setStyle(Paint.Style.STROKE);
 		cellPaint.setStrokeWidth(1f);
 		cellPaint.setColor(0xff00ff00);
-		for (float y = cellHeight / 3f; y < cellHeight * 0.55f; y += 2f) {
+		for (float y = cellHeight / 3f; y < cellHeight * 0.55f; y += 2f)
+		{
 			float l = cellWidth / 3f;
 			float r = cellWidth / 3f * rng.nextFloat() + cellWidth / 3f;
 			canvas.drawLine(sx + l, sy + y, sx + r, sy + y, cellPaint);
 		}
 	}
 
-	// ******************************************************************** //
-	// State Save/Restore.
-	// ******************************************************************** //
-
 	/**
-	 * Save the game state of this cell, as part of saving the overall game
-	 * state.
+	 * Save the game state of this cell, as part of saving the overall game state
 	 * 
-	 * @return A Bundle containing the saved state.
+	 * @return A Bundle containing the saved state
 	 */
-	Bundle saveState() {
+	Bundle saveState()
+	{
 		Bundle map = new Bundle();
 
-		// Save the aspects of the state which aren't part of the board
-		// configuration (that gets re-created on reload).
+		// Save the aspects of the state which aren't part of the board configuration (that gets
+		// recreated on reload)
 		map.putString("connectedDirs", connectedDirs.toString());
 		map.putFloat("currentAngle", rotateAngle);
 		map.putInt("highlightPos", highlightPos);
@@ -1000,57 +984,63 @@ class Cell {
 		map.putBoolean("isRoot", isRoot);
 		map.putBoolean("isLocked", isLocked);
 
-		// Note: we don't save the focus state; focus save and restore
-		// is done in BoardView.
+		// Note: we don't save the focus state; focus save and restore is done in BoardView
 
 		return map;
 	}
 
 	/**
-	 * Restore the game state of this cell from the given Bundle, as part of
-	 * restoring the overall game state.
+	 * Restore the game state of this cell from the given Bundle, as part of restoring the overall
+	 * game state
 	 * 
-	 * @param map
-	 *            A Bundle containing the saved state.
+	 * @param map	A Bundle containing the saved state
 	 */
-	void restoreState(Bundle map) {
-		connectedDirs = Dir.valueOf(map.getString("connectedDirs"));
-		rotateAngle = map.getFloat("currentAngle");
-		highlightPos = map.getInt("highlightPos");
-		isConnected = map.getBoolean("isConnected");
+	void restoreState(Bundle map)
+	{
+		connectedDirs 	 = Dir.valueOf(map.getString("connectedDirs"));
+		rotateAngle 	 = map.getFloat("currentAngle");
+		highlightPos	 = map.getInt("highlightPos");
+		isConnected		 = map.getBoolean("isConnected");
 		isFullyConnected = map.getBoolean("isFullyConnected");
-		isBlind = map.getBoolean("isBlind");
-		isRoot = map.getBoolean("isRoot");
-		isLocked = map.getBoolean("isLocked");
+		isBlind 		 = map.getBoolean("isBlind");
+		isRoot 			 = map.getBoolean("isRoot");
+		isLocked 		 = map.getBoolean("isLocked");
 
-		// Phew! Time for a redraw... but we'll invalidate() at the
-		// board level.
+		// Phew! Time for a redraw, but we'll invalidate() at the board level
 	}
 
-	// ******************************************************************** //
-	// Private Types.
-	// ******************************************************************** //
-
-	/**
-	 * This enumeration defines the images, other than the cable images, which
-	 * we use.
-	 */
-	private enum Image {
-		NOTHING(R.drawable.nothing), EMPTY(R.drawable.empty), LOCKED(
-				R.drawable.background_locked), BG(R.drawable.background), COMP1(
-				R.drawable.computer1), COMP2(R.drawable.computer2), SERVER(
-				R.drawable.server), SERVER1(R.drawable.server1), BLIP_T01(
-				R.drawable.blip_t01), BLIP_T03(R.drawable.blip_t03), BLIP_T05(
-				R.drawable.blip_t05), BLIP_T07(R.drawable.blip_t07), BLIP_T08(
-				R.drawable.blip_t08), BLIP_T09(R.drawable.blip_t09), BLIP_T10(
-				R.drawable.blip_t10), BLOB_14(R.drawable.blob_14), BLOB_15(
-				R.drawable.blob_15), BLOB_16(R.drawable.blob_16), BLOB_17(
-				R.drawable.blob_17), BLOB_18(R.drawable.blob_18), BLOB_19(
-				R.drawable.blob_19), BLOB_20(R.drawable.blob_20), BLOBG_14(
-				R.drawable.blob_g_14), BLOBG_15(R.drawable.blob_g_15), BLOBG_16(
-				R.drawable.blob_g_16), BLOBG_17(R.drawable.blob_g_17), BLOBG_18(
-				R.drawable.blob_g_18), BLOBG_19(R.drawable.blob_g_19), BLOBG_20(
-				R.drawable.blob_g_20);
+	//This enumeration defines the images, other than the cable images, which we use
+	private enum Image
+	{
+		NOTHING(R.drawable.nothing),
+		EMPTY(R.drawable.empty),
+		LOCKED(R.drawable.background_locked),
+		BG(R.drawable.background),
+		COMP1(R.drawable.computer1),
+		COMP2(R.drawable.computer2),
+		SERVER(R.drawable.server),
+		SERVER1(R.drawable.server1),
+		BLIP_T01(R.drawable.blip_t01),
+		BLIP_T03(R.drawable.blip_t03),
+		BLIP_T05(R.drawable.blip_t05),
+		BLIP_T07(R.drawable.blip_t07),
+		BLIP_T08(R.drawable.blip_t08),
+		BLIP_T09(R.drawable.blip_t09),
+		BLIP_T10(R.drawable.blip_t10),
+		BLOB_14(R.drawable.blob_14),
+		BLOB_15(R.drawable.blob_15),
+		BLOB_16(R.drawable.blob_16),
+		BLOB_17(R.drawable.blob_17),
+		BLOB_18(R.drawable.blob_18),
+		BLOB_19(R.drawable.blob_19),
+		BLOB_20(R.drawable.blob_20),
+		BLOBG_14(R.drawable.blob_g_14),
+		BLOBG_15(R.drawable.blob_g_15),
+		BLOBG_16(R.drawable.blob_g_16),
+		BLOBG_17(R.drawable.blob_g_17),
+		BLOBG_18(R.drawable.blob_g_18),
+		BLOBG_19(R.drawable.blob_g_19),
+		BLOBG_20(R.drawable.blob_g_20);
 
 		Image(int r) {
 			resid = r;
@@ -1060,28 +1050,48 @@ class Cell {
 		public Bitmap bitmap = null;
 	}
 
-	// Images to show network data blips.
-	private static final Image[] BLIP_IMAGES = { Image.BLOB_14, Image.BLOB_15,
-			Image.BLOB_16, Image.BLOB_17, Image.BLOB_18, Image.BLOB_19,
-			Image.BLOB_20, };
+	// Images to show network data blips
+	private static final Image[] BLIP_IMAGES =
+		{
+			Image.BLOB_14,
+			Image.BLOB_15,
+			Image.BLOB_16,
+			Image.BLOB_17,
+			Image.BLOB_18,
+			Image.BLOB_19,
+			Image.BLOB_20
+		};
 
-	// Images to show network data blips.
-	private static final Image[] BLIP_G_IMAGES = { Image.BLOBG_14,
-			Image.BLOBG_15, Image.BLOBG_16, Image.BLOBG_17, Image.BLOBG_18,
-			Image.BLOBG_19, Image.BLOBG_20, };
+	// Images to show network data blips
+	private static final Image[] BLIP_G_IMAGES =
+		{
+			Image.BLOBG_14,
+			Image.BLOBG_15,
+			Image.BLOBG_16,
+			Image.BLOBG_17,
+			Image.BLOBG_18,
+			Image.BLOBG_19,
+			Image.BLOBG_20
+		};
 
-	// Images to show network data blips arriving at a terminal.
-	private static final Image[] BLIP_T_IMAGES = { Image.BLIP_T01,
-			Image.BLIP_T03, Image.BLIP_T05, Image.BLIP_T07, Image.BLIP_T08,
-			Image.BLIP_T09, Image.BLIP_T10, };
+	// Images to show network data blips arriving at a terminal
+	private static final Image[] BLIP_T_IMAGES =
+		{
+			Image.BLIP_T01,
+			Image.BLIP_T03,
+			Image.BLIP_T05,
+			Image.BLIP_T07,
+			Image.BLIP_T08,
+			Image.BLIP_T09,
+			Image.BLIP_T10
+		};
 
 	// ******************************************************************** //
 	// Class Data.
 	// ******************************************************************** //
 
-	// Debugging tag.
-	@SuppressWarnings("unused")
-	private static final String TAG = "netscramble";
+	// Debugging tag
+	//private static final String TAG = "netscramble";
 
 	// Default time taken to rotate a cell, in ms.
 	private static final long ROTATE_DFLT_TIME = 200;
@@ -1096,9 +1106,6 @@ class Cell {
 	// Private Data.
 	// ******************************************************************** //
 
-	// The cell's position in the board
-	private final int xindex, yindex;
-
 	// Our neighbouring cells up, down, left and right. This changes from game to game as each
 	// skill level has its own board size and may or may not wrap. null if there is no
 	// neighbour in that direction
@@ -1106,9 +1113,6 @@ class Cell {
 	private Cell nextD;
 	private Cell nextL;
 	private Cell nextR;
-
-	// True if this cell has the focus
-	private boolean haveFocus;
 
 	// The directions in which this cell is isConnected. This is set up at the start of each game
 	private Dir connectedDirs;
@@ -1119,9 +1123,6 @@ class Cell {
 	private float rotateTarget = 0;
 	private long rotateStart = 0;
 	private float rotateAngle = 0f;
-
-	// Duration of the current rotation in ms
-	private long rotateTime = 250;
 
 	// Status information for the highlight band across the cell.
 	// This is used to draw a diagonal band of highlightPos flicking across the cell, to
@@ -1148,9 +1149,8 @@ class Cell {
 	// to be displayed dark (not grey)
 	private boolean isConnected;
 
-	// True iff the cell is currently part of a fully connected network --
-	// in other words, a solved puzzle. This may cause it to be displayed
-	// differently; e.g. the server shows green LEDs.
+	// True if the cell is currently part of a fully connected network - in other words, a solved
+	// puzzle. This may cause it to be displayed differently; e.g. the server shows green LEDs
 	private boolean isFullyConnected;
 
 	// True if the cell is blind. This is a difficulty factor
@@ -1162,22 +1162,13 @@ class Cell {
 	// True if the cell has been isLocked by the user; this causes the background to be highlighted
 	private boolean isLocked;
 
-	// Cell's left X co-ordinate
-	private int cellLeft;
-
-	// Cell's top Y co-ordinate
-	private int cellTop;
-
-	// Cell's current width
-	private int cellWidth;
-
-	// Cell's current height
-	private int cellHeight;
-
-	// Painter used in onDraw()
-	private Paint cellPaint;
-
-	// True if the cell's rendered state is up to date
-	private boolean stateValid = false;
-
+	private boolean haveFocus;			// True if this cell has the focus
+	private long rotateTime = 250;		// Duration of the current rotation in ms
+	private int cellLeft;				// Cell's left X co-ordinate
+	private int cellTop;				// Cell's top Y co-ordinate
+	private int cellWidth;				// Cell's current width
+	private int cellHeight;				// Cell's current height
+	private Paint cellPaint;			// Painter used in onDraw()
+	private boolean stateValid = false; // True if the cell's rendered state is up to date
+	private final int xindex, yindex;	// The cell's position in the board
 }

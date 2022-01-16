@@ -26,4 +26,5 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.4.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0'
     implementation "com.android.billingclient:billing-ktx:4.0.0"
+    implementation 'androidx.preference:preference:1.1.1'
 }

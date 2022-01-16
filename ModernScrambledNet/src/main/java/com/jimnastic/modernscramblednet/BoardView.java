@@ -547,12 +547,11 @@ public class BoardView
     // ******************************************************************** //
 
     /**
-     * Scan the board to see which cells are connected to the server. Update the
-     * state of every cell accordingly. This function is called each time a cell
-     * is rotated, to re-compute the connectedness of every cell.
+     * Scan the board to see which cells are connected to the server. Update the state of every cell
+     * accordingly. This function is called each time a cell is rotated, to re-compute the
+     * connectedness of every cell
      *
-     * @return true iff one or more cells have been connected that previously
-     * weren't.
+     * @return true if one or more cells have been connected that previously weren't
      */
     private synchronized boolean updateConnections()
     {
@@ -607,15 +606,14 @@ public class BoardView
     }
 
     /**
-     * Determine whether we have a connection from the given cell in the given
-     * direction which hasn't already been logged in got[][].
+     * Determine whether we have a connection from the given cell in the given direction which
+     * hasn't already been logged in got[][]
      *
-     * @param cell Starting cell.
-     * @param dir  Direction to look in.
-     * @param got  Array of flags showing which cells we have already found
-     *             connections for. If we find a new connection, we will set the
-     *             flag for it in here.
-     * @return true iff we found a new connection in the given direction.
+     * @param cell Starting cell
+     * @param dir  Direction to look in
+     * @param got  Array of flags showing which cells we have already found connections for. If we
+     *             find a new connection, we will set the flag for it in here
+     * @return true if we found a new connection in the given direction
      */
     private boolean hasNewConnection(Cell cell, Cell.Dir dir, boolean[][] got)
     {
@@ -637,19 +635,18 @@ public class BoardView
     }
 
     /**
-     * Determine whether the board is currently in a solved state -- i.e. all
-     * terminals are connected to the server.
+     * Determine whether the board is currently in a solved state/all terminals are connected to
+     * the server
      * <p>
-     * Note that in some layouts, it is possible to connect all the terminals
-     * without using all the cable sections. Since the game intro asks the user
-     * to connect all the terminals, which makes sense, we look for unconnected
-     * terminals specifically.
+     * Note that in some layouts, it is possible to connect all the terminals without using all the
+     * cable sections. Since the game intro asks the user to connect all the terminals, which makes
+     * sense, we look for unconnected terminals specifically.
      * <p>
-     * NOTE: We assume that updateConnections() has been called to set the
-     * connected states of all cells correctly for the current board state.
+     * NOTE: We assume that updateConnections() has been called to set the connected states of all
+     * cells correctly for the current board state.
      *
-     * @return true iff the board is currently in a solved state -- ie. every
-     * terminal cell is connected to the server.
+     * @return true if the board is currently in a solved state -- ie. every terminal cell is
+     * connected to the server.
      */
     synchronized boolean isSolved()
     {

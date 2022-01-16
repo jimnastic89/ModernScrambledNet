@@ -65,9 +65,9 @@ public abstract class SurfaceRunner
     public static final int LOOPED_TICKER = 0x0002;
 
     /**
-     * Create a SurfaceRunner instance.
+     * Create a SurfaceRunner instance
      *
-     * @param app The application context we're running in.
+     * @param app The application context we're running in
      */
     public SurfaceRunner(Context app)
     {
@@ -76,10 +76,10 @@ public abstract class SurfaceRunner
     }
 
     /**
-     * Create a SurfaceRunner instance.
+     * Create a SurfaceRunner instance
      *
-     * @param app   The application context we're running in.
-     * @param attrs Layout attributes for this SurfaceRunner.
+     * @param app   The application context we're running in
+     * @param attrs Layout attributes for this SurfaceRunner
      */
     public SurfaceRunner(Context app, AttributeSet attrs)
     {
@@ -101,16 +101,16 @@ public abstract class SurfaceRunner
         setFocusableInTouchMode(true);
 
         // Workaround for edge fading
-        // Sometimes after repeated orientation changes, one edge will fade; this fixes it.
+        // Sometimes after repeated orientation changes, one edge will fade; this fixes it
         setHorizontalFadingEdgeEnabled(false);
         setVerticalFadingEdgeEnabled(false);
     }
 
     /**
-     * Check whether the given option flag is set on this surface.
+     * Check whether the given option flag is set on this surface
      *
-     * @param option The option flag to test; one of SURFACE_XXX.
-     * @return true iff the option is set.
+     * @param option The option flag to test; one of SURFACE_XXX
+     * @return true if the option is set
      */
     public boolean optionSet(int option)
     {

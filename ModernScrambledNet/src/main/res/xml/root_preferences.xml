@@ -1,0 +1,47 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <SwitchPreferenceCompat
+        app:key="sync"
+        app:title="@string/menu_anim"
+        android:summaryOn="Network activity animations enabled"
+        android:summaryOff="Network activity animations disabled" />
+
+    <ListPreference
+        android:defaultValue="1"
+        android:entries="@array/reply_entries"
+        android:entryValues="@array/reply_values"
+        android:key="list_preference_1"
+        android:title="Volume Level"
+        android:summary="%s"/>
+
+    <PreferenceCategory app:title="@string/boardsize_header">
+
+        <EditTextPreference
+            app:key="signature"
+            app:title="@string/skill_novice"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="signature"
+            app:title="@string/skill_normal"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="signature"
+            app:title="@string/skill_expert"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="signature"
+            app:title="@string/skill_master"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="signature"
+            app:title="@string/skill_insane"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

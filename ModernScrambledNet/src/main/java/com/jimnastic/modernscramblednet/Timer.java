@@ -221,30 +221,20 @@ abstract class Timer
         return true;
     }
 
+    private long tickInterval; // The tick interval in ms
+    private boolean isRunning; // True if the timer is running
+    private int tickCount;     // Number of times step() has been called
+    private long lastLogTime;  // The time at which we last added to accumTime.
 
-    // ******************************************************************** //
-    // Member Data.
-    // ******************************************************************** //
-
-    // The tick interval in ms.
-    private long tickInterval;
-
-    // true iff the timer is running.
-    private boolean isRunning;
-
-    // Number of times step() has been called.
-    private int tickCount;
-
-    // Time at which to execute the next step.  We schedule each
-    // step at this plus x ms; this gives us an even execution rate.
+    // Time at which to execute the next step.  We schedule each step at this plus x ms; this gives
+    // us an even execution rate
     private long nextTime;
 
-    // The accumulated time in ms for which this timer has been running.
-    // Increments between start() and stop(); start(true) resets it.
+    // The accumulated time in ms for which this timer has been running. Increments between start()
+    // and stop(); start(true) resets it
     private long accumTime;
 
-    // The time at which we last added to accumTime.
-    private long lastLogTime;
+
 
 }
 

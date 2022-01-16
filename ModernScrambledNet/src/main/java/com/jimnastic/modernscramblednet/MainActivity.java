@@ -38,12 +38,21 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.View;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.ViewAnimator;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragment;
+import androidx.preference.PreferenceManager;
+import androidx.preference.SwitchPreferenceCompat;
 
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.jimnastic.modernscramblednet.BoardView.Skill;
 
 public class MainActivity extends AppCompatActivity
@@ -121,15 +130,14 @@ public class MainActivity extends AppCompatActivity
     // ******************************************************************** //
 
     /**
-     * Called when the activity is starting. This is where most initialization
-     * should go: calling setContentView(int) to inflate the activity's UI, etc.
+     * Called when the activity is starting. This is where most initialization should go: calling
+     * setContentView(int) to inflate the activity's UI, etc
      * <p>
-     * You can call finish() from within this function, in which case
-     * onDestroy() will be immediately called without any of the rest of the
-     * activity lifecycle executing.
+     * You can call finish() from within this function, in which case onDestroy() will be
+     * immediately called without any of the rest of the activity lifecycle executing
      * <p>
-     * Derived classes must call through to the super class's implementation of
-     * this method. If they do not, an exception will be thrown.
+     * Derived classes must call through to the super class's implementation of this method. If they
+     * do not, an exception will be thrown
      *
      * @param savedInstanceState If the activity is being re-initialized after previously being
      *                           shut down then this Bundle contains the data it most recently
@@ -155,23 +163,21 @@ public class MainActivity extends AppCompatActivity
         timeText = new StringBuilder(10);
 
         // Create the GUI for the game
-        setContentView(R.layout.main);
+        setContentView(R.layout.mainactivity);
         setupGui();
 
         // Restore our preferences
         SharedPreferences prefs = getPreferences(0);
+        newPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         // See if sounds are enabled
-
         String smode = prefs.getString("soundMode", null);
         soundMode = (smode != null ? SoundMode.valueOf(smode) : SoundMode.FULL);
-
-        // Load the sounds
-        soundPool = createSoundPool();
+        soundPool = createSoundPool(); // Load the sounds
 
         // See if animations are enabled
-        animEnable = prefs.getBoolean("animEnable", true);
-        boardView.setAnimEnable(animEnable);
+        SettingsActivity2.AnimationState = newPrefs.getBoolean("sync",true);
+        boardView.setAnimEnable(SettingsActivity2.AnimationState);
 
         // If we have a previous state to restore, try to do so
         boolean restored = false;
@@ -213,7 +219,8 @@ public class MainActivity extends AppCompatActivity
     protected void onRestart()
     {
         Log.i(TAG, "onRestart()");
-
+        Log.i("AnimationTest","onRestart() called, setting animation to: " + SettingsActivity2.AnimationState);
+        setAnimEnable(SettingsActivity2.AnimationState);
         super.onRestart();
     }
 
@@ -280,6 +287,8 @@ public class MainActivity extends AppCompatActivity
 
         // Display the skill level
         statusMode.setText(gameSkill.label);
+        Log.i("AnimationTest", "onResume() should now set the animation state to " + SettingsActivity2.AnimationState);
+        setAnimEnable(SettingsActivity2.AnimationState);
 
         // If we restored a state, go to that state. Otherwise start at the welcome screen
         if (gameState == State.NEW)
@@ -507,7 +516,6 @@ public class MainActivity extends AppCompatActivity
         // GUI is created, state is restored (if any), and re-sync the options menus
         selectCurrentSkill();
         selectSoundMode();
-        selectAnimEnable();
 
         return true;
     }
@@ -532,18 +540,6 @@ public class MainActivity extends AppCompatActivity
             MenuItem soundItem = mainMenu.findItem(id);
             if (soundItem != null)
                 soundItem.setChecked(true);
-        }
-    }
-
-    private void selectAnimEnable()
-    {
-        // Set the animation enable menu item to the current state.
-        if (mainMenu != null)
-        {
-            int id = animEnable ? R.id.anim_on : R.id.anim_off;
-            MenuItem animItem = mainMenu.findItem(id);
-            if (animItem != null)
-                animItem.setChecked(true);
         }
     }
 
@@ -596,8 +592,7 @@ public class MainActivity extends AppCompatActivity
                 // Launch the help activity as a subactivity.
                 setState(State.PAUSED, false);
                 Intent hIntent = new Intent();
-                //hIntent.setClass(this, Help.class);
-                hIntent.setClass(this, HelpView.class);
+                hIntent.setClass(this, HelpActivity.class);
                 startActivity(hIntent);
                 break;
             case R.id.menu_about:
@@ -627,16 +622,14 @@ public class MainActivity extends AppCompatActivity
             case R.id.sounds_on:
                 setSoundMode(SoundMode.FULL);
                 break;
-            case R.id.anim_off:
-                setAnimEnable(false);
-                break;
-            case R.id.anim_on:
-                setAnimEnable(true);
-                break;
             case R.id.menu_autosolve:
                 solverUsed = true;
                 boardView.autosolve();
                 break;
+            case R.id.menu_settings:
+                Intent settingsIntent = new Intent();
+                settingsIntent.setClass(this, SettingsActivity2.class);
+                startActivity(settingsIntent);
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -657,27 +650,24 @@ public class MainActivity extends AppCompatActivity
         selectSoundMode();
     }
 
-    private void setAnimEnable(boolean enable)
+    public void setAnimEnable(boolean enable)
     {
-        animEnable = enable;
-        boardView.setAnimEnable(animEnable);
+        //animEnable = enable;
+        Log.i("AnimationTest", "setAnimEnable() has been called with " + SettingsActivity2.AnimationState);
+        boardView.setAnimEnable(SettingsActivity2.AnimationState);
 
         // Save the new setting to prefs.
-        SharedPreferences prefs = getPreferences(0);
+        /*SharedPreferences prefs = getPreferences(0);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean("animEnable", animEnable);
-        editor.apply();
-
-        selectAnimEnable();
+        editor.apply();*/
     }
 
     // ******************************************************************** //
     // Game progress.
     // ******************************************************************** //
 
-    /**
-     * This method is called each time the user clicks a cell.
-     */
+    //This method is called each time the user clicks a cell
     void cellClicked(Cell cell)
     {
         // Count the click, but only if this isn't a repeat click on the same cell
@@ -1184,13 +1174,12 @@ public class MainActivity extends AppCompatActivity
 
     private static final String TAG = "netscramble"; // Debugging tag
     private Resources appResources;                 // The app's resources
-    private BoardView boardView = null;             // The game board
+
     private BoardView.Skill gameSkill;                 // The currently selected skill level
     private State gameState;                         // The state of the current game
     private SoundPool soundPool;                     // Sound pool used for sound effects
     private GameTimer gameTimer;                     // Timer used to time the game
     private SoundMode soundMode;                     // Current sound mode
-    private boolean animEnable;                         // True to enable the network animation
     private int clickCount = 0;                         // Number of times the user has clicked
     private boolean solverUsed = false;                 // Has the auto-solver been invoked
 
@@ -1222,4 +1211,10 @@ public class MainActivity extends AppCompatActivity
 
     // The previous cell that was clicked. Used to detect multiple clicks on the same cell
     private Cell prevClickedCell = null;
+
+    //public boolean animEnable; // True to enable the network animation
+
+    public BoardView boardView = null; // The game board
+
+    private SharedPreferences newPrefs;
 }
