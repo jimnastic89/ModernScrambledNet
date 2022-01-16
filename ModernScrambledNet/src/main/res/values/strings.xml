@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App title -->
+    <string name="title">Scrambled Net</string>
+
+    <string name="description">A computer networking puzzle game</string>
+
+    <string name="splash_text">
+        <b>Scrambled Net</b>
+        \n\n
+        Connect the terminals to the server by rotating the tiles
+        \n\n
+        Touch a tile to rotate it; press and hold a tile to lock it when you think it\'s correct.
+        \n\n
+        Use the menu to select different skill levels, pause the game, or start a new game.\n\n
+        See the help in the menu for a full user\'s guide.\n\n
+        <b>Tap the screen to start.</b>
+    </string>
+
+    <!-- Help texts for specific skill levels -->
+    <string name="help_master">At Master level, the board edges wrap around; cells on the right
+        edge connect to those on the left edge, and vice versa. Similarly for the top and bottom
+        edges
+    </string>
+
+    <string name="help_insane">At Insane level, the board edges wrap around; cells on the right
+        edge connect to those on the left edge, and vice versa. Similarly for the top and bottom
+        edges. But in addition, in cells with 3 or 4 connections, the wiring is invisible. Good luck!
+    </string>
+
+    <string name="about_text">An Android puzzle game by Ian Cameron Smith
+        \nMaintained by Michael Mueller
+        \nInspired by KNetwalk by Andi Peredri, Thomas Nagy, and Reinhold Kainhofer
+        \n
+        \nFor information and source code see the project home page
+        \n
+        \nThis program is open-source software; you can redistribute it and/or modify it under the
+        terms of the GNU General Public License as published by the Free Software Foundation;
+        either version 2 of the License, or (at your option) any later version
+        \n
+        \nThis program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+        without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+        See the GNU General Public License at
+        <a href="http://www.gnu.org/licenses/gpl-2.0.html">gnu.org</a> for more details
+    </string>
+
+    <!-- Scores list strings -->
+    <string name="scores_title">Personal Bests</string>
+    <string name="scores_clickstitle">Fewest Clicks</string>
+    <string name="scores_timestitle">Fastest Time</string>
+    <string name="scores_skill">Skill Level</string>
+    <string name="scores_clicks">Clicks</string>
+    <string name="scores_time">Time</string>
+    <string name="scores_when">When</string>
+    <string name="menu_scores_reset">Reset all scores</string>
+
+    <!-- Text displayed in pause mode -->
+    <string name="pause_text">
+        <b>Game Paused</b>
+        \n
+        \nTap to continue
+    </string>
+
+    <!-- Win dialog strings -->
+    <string name="win_title"><b>You win!</b></string>
+    <string name="win_pbest_title"><b>New Personal Best!</b></string>
+    <string name="win_text">Congratulations! You solved the puzzle in %1$d:%2$02d, using %3$d clicks</string>
+    <string name="win_spares_text">Congratulations! You solved the puzzle in %1$d:%2$02d, using %3$d clicks, and with %4$d pieces left over!</string>
+    <string name="best_clicks_text">That\'s your best click count yet at this level!</string>
+    <string name="best_time_text">That\'s your fastest time yet at this level!</string>
+    <string name="best_both_text">That\'s your best click count and fastest time yet at this level!</string>
+    <string name="win_finish">Tap "New Game" for a new game, or "Continue" to experiment with this layout</string>
+    <string name="win_new">New Game</string>
+    <string name="win_continue">Continue</string>
+    <string name="about_title">About</string>
+
+    <!-- Button strings -->
+    <string name="button_ok">OK</string>
+    <string name="button_close">Close</string>
+    <string name="button_license">Show license</string>
+    <string name="button_homepage">Home page</string>
+
+    <!-- Menu strings -->
+    <string name="menu_game_new">New game</string>
+    <string name="menu_game_pause">Pause</string>
+    <string name="menu_show_scores">High scores</string>
+    <string name="menu_set_skill">Skill level</string>
+    <string name="menu_sound">Sound</string>
+    <string name="menu_anim">Animation</string>
+    <string name="menu_autosolve">Auto solve</string>
+    <string name="menu_stopsolve">Stop solving</string>
+    <string name="menu_help">Help</string>
+    <string name="menu_about">About</string>
+    <string name="no_sounds">Mute</string>
+    <string name="quiet_sounds">Quiet</string>
+    <string name="play_sounds">Loud</string>
+    <string name="anim_off">Off</string>
+    <string name="anim_on">On</string>
+
+    <!-- Skill levels. -->
+    <string name="skill_mode">Mode</string>
+    <string name="skill_novice">Easy</string>
+    <string name="skill_normal">Normal</string>
+    <string name="skill_expert">Hard</string>
+    <string name="skill_master">Harder</string>
+    <string name="skill_insane">Insane</string>
+
+    <!-- URLs. -->
+    <string name="url_license">http://www.gnu.org/licenses/gpl-2.0.html</string>
+    <string name="url_homepage">https://www.silentservices.de</string>
+
+    <!-- Help texts -->
+    <string name="help_intro">
+        Scrambled Net is a simple puzzle game which requires you to sort
+        out the connections in a computer network, so that all the terminals are
+        connected to the server.  The network is made up of tiles, and while all
+        the tiles are in the right place, they have been rotated randomly into a
+        useless mess.\n\
+        \n\
+        You need to rotate individual tiles to re-connect the network.
+        Tiles which are connected to the server are shown highlighted.  When all
+        terminals are connected, you\'ve won.\n\
+        \n\
+        It may seem simple at first, but try working your way up through the five
+        difficulty levels.  You may think the novice level is a blast, but
+        I guarantee it gets more challenging when some of the tiles are invisible!
+        If it gets too hard, try the hints below.\n\
+    </string>
+
+    <string name="help_HowToPlay_Title">
+        How to play
+    </string>
+
+    <string name="help_HowToPlay_Content">
+        Use the menu to select different skill levels, pause the game, or start a new game
+        \n\n
+        Tap a tile to rotate it once clockwise. Keep tapping until the tile is in the right orientation;
+        if you need multiple turns to get it pointing the right way, that\'s still
+        only counted as one click.
+        \n\n
+        If you think that you have set a tile correctly, you can lock it in place.  To lock a tile, press and hold
+        the tile for a second; it will click and turn darker to indicate
+        that it is locked.  If you try to rotate a locked tile, it will display a
+        flashing highlight.  You can unlock it again by pressing and holding it.
+        \n\n
+        Bear in mind that locking a tile is no indication that it is correct
+        \n
+    </string>
+
+    <string name="help_Difficulties_Title">
+        Difficulties
+    </string>
+
+    <string name="help_Difficulties_Content">
+        Scrambled Net has five levels of difficulty. Higher skill levels
+        have larger boards, and the most advanced levels have some special features:\n\
+        \n\
+        • <b>Novice</b> gives you a small board to play with.\n\
+        \n\
+        • <b>Normal</b> level has a somewhat larger board.\n\
+        \n\
+        • <b>Expert</b> level uses a large board.\n\
+        \n\
+        • <b>Master</b> level also uses a large board; but as an added challenge,
+        the board \"wraps around\".  This means that a connection can go off the right
+        edge, for example, and connect to the corresponding tile on the left edge;
+        the same applies to the top and bottom edges.  Also, you\'ll find some 4-way
+        connections thrown in to the mix.\n\
+        \n\
+        • <b>Insane</b> level is the same as Master, but with the wrinkle that all
+        3-way and 4-way connections are invisible!  You\'ll find that you need to
+        figure out a whole new set of deductions to complete an insane puzzle.  Be
+        assured, though, that it <i>can</i> be done!\n\
+        \n\
+        One last note: to take full advantage of your device\'s capabilities, the
+        actual number of tiles in a board is different for different devices
+    </string>
+
+    <string name="help_Menu_Title">
+        Settings
+    </string>
+
+    <string name="help_Menu_Content">
+            The settings menu contains a number of options:\n\
+            \n\
+            • <b>New game</b> starts a new game, abandoning the current game if any.\n\
+            \n\
+            • <b>Pause</b> pauses the game, and covers the screen.  Tap the screen
+            to un-pause.\n\
+            \n\
+            • <b>High scores</b> displays a table of your personal best scores — both
+            the fewest clicks in which you\'ve solved each difficulty level, and the
+            fastest time.  You can use the menu to reset your scores.  Press \"Back\"
+            to get back to the game.\n\
+            \n\
+            • <b>Skill level</b> prompts you to select a skill level, then starts
+            a new game at that skill level.\n\
+            \n\
+            • <b>Solve it!</b> runs an autosolver to finish the current puzzle for you.
+            If you get completely stuck, you can use this to see the solution — but
+            you won\'t get personal best credit!  While solving, this menu item
+            changes to a \"Stop\" button, so you can stop the autosolver at any time.\n\
+            \n\
+            • <b>Sound</b> lets you set your preferred sound effects level.  However,
+            the sound effects volume can always be adjusted in the game using the hardware
+            volume keys.  If no sound is coming out, try turning up the volume using
+            the buttons.\n\
+            \n\
+            • <b>Animation</b> lets you turn the \"network data\" animation on or off.\n\
+            \n\
+            • <b>Help</b> displays this help.\n\
+            \n\
+            • <b>About</b> displays version and license information
+    </string>
+
+    <string name="help_Hints_Title">
+        Hints
+    </string>
+
+    <string name="help_Hints_Content">
+        <item>Novice
+            The edges are a good place to start - remember that a connection
+            can never go off the edge of the board, so any tile which connects
+            that way must be wrong.  If a tile connects out to the right, then the
+            next tile to the right must connect back to the left.  In this way,
+            once you have figured out one tile, you know something about the
+            adjacent tiles.\n\
+            \n\
+            A tile which does <b>not</b> connect in a given direction also
+            tells you something about the next tile in that direction
+        </item>
+
+        <item>Normal
+            You can <i>sometimes</i> finish a level without using all the tiles;
+            but you can <b>always</b> finish a level by using all the tiles.  So you
+            may assume that all tiles must have a valid connection.\n\
+            \n\
+            Keep track of which tiles you <b>know</b> are correct by locking
+            them - press and hold a tile to lock it (see \"Playing the Game\"
+            above).  But be sure that you really have them correct
+        </item>
+
+        <item>Expert
+            Expert mode is just the same as before, only larger - don\'t be
+            discouraged!\n\
+            \n\
+            Terminals always have exactly one connection, and all terminals have to
+            connect to the server.  If two terminals connect together without a
+            branch, there\'s no way to hook them to the server; so that must be
+            wrong
+        </item>
+
+        <item>Master
+            In Master level, the edges no longer help you.  Look for blocks of
+            terminals together, and remember that two terminals can\'t be connected
+            directly together.  When you figure out one tile, look for all possible
+            deductions you can make based on it
+        </item>
+
+        <item>Insane
+            In Insane level, you will need to make use of all the deductions you
+            have figured out, plus at least one new one.  Remember that only 3-way
+            and 4-way tiles are invisible; so an invisible tile can often tell you
+            something about its neighbours
+        </item>
+
+    </string>
+
+</resources>

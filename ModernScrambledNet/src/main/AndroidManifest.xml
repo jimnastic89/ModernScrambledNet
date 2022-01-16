@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.jimnastic.modernscramblednet"
+    android:installLocation="auto"
+    android:versionCode="30"
+    android:versionName="5.0.4">
+
+    <supports-screens
+        android:anyDensity="true"
+        android:largeScreens="true"
+        android:normalScreens="true"
+        android:resizeable="true"
+        android:smallScreens="true" />
+
+    <application
+        android:description="@string/description"
+        android:icon="@drawable/netscramble"
+        android:label="@string/title"
+        android:theme="@style/Theme.AppCompat">
+        <activity
+            android:name=".HelpView"
+            android:exported="false" />
+        <activity
+            android:name=".MainActivity"
+            android:alwaysRetainTaskState="true"
+            android:exported="true"
+            android:label="@string/title"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.PREFERENCE" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ScoreList"
+            android:configChanges="mcc|mnc|touchscreen|keyboard|keyboardHidden|navigation"
+            android:exported="true"
+            android:label="@string/scores_title"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
