@@ -38,21 +38,13 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.View;
-import android.widget.CompoundButton;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.ViewAnimator;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SwitchCompat;
-import androidx.preference.Preference;
-import androidx.preference.PreferenceFragment;
 import androidx.preference.PreferenceManager;
-import androidx.preference.SwitchPreferenceCompat;
 
-import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.jimnastic.modernscramblednet.BoardView.Skill;
 
 public class MainActivity extends AppCompatActivity
@@ -116,10 +108,10 @@ public class MainActivity extends AppCompatActivity
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.about_text)
-                .setTitle(R.string.title);
-        builder.setNegativeButton(R.string.button_close, (dialog, id) ->
+                .setTitle(R.string.title)
+                .setNegativeButton(R.string.button_close, (dialog, id) ->
         {
-            // User clicked Close button
+            dialog.cancel();
         });
         AlertDialog dialog = builder.create();
         dialog.show();
@@ -155,9 +147,6 @@ public class MainActivity extends AppCompatActivity
 
         gameTimer = new GameTimer();
 
-        // We want the audio controls to control our sound volume
-        this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
-
         // Create string formatting buffers
         clicksText = new StringBuilder(10);
         timeText = new StringBuilder(10);
@@ -168,24 +157,27 @@ public class MainActivity extends AppCompatActivity
 
         // Restore our preferences
         SharedPreferences prefs = getPreferences(0);
-        newPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences newPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        // See if sounds are enabled
-        String smode = prefs.getString("soundMode", null);
-        soundMode = (smode != null ? SoundMode.valueOf(smode) : SoundMode.FULL);
-        soundPool = createSoundPool(); // Load the sounds
+        /* **** Sound Setup *****/
+        this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        SettingsActivity.SoundString = newPrefs.getString("SoundPreference", "FULL");
+        soundMode = SettingsActivity.SoundState();
+        soundPool = createSoundPool();
+        /* **** End Sound Setup *****/
 
-        // See if animations are enabled
-        SettingsActivity2.AnimationState = newPrefs.getBoolean("sync",true);
-        boardView.setAnimEnable(SettingsActivity2.AnimationState);
+        /* **** Animation Setup *****/
+        SettingsActivity.AnimationState = newPrefs.getBoolean("AnimationPreference",true);
+        boardView.setAnimEnable(SettingsActivity.AnimationState);
+        /* **** End Animation Setup *****/
 
         // If we have a previous state to restore, try to do so
         boolean restored = false;
         if (savedInstanceState != null)
             restored = restoreState(savedInstanceState);
 
-        // Get the current game skill level from the preferences, if we didn't
-        // get a saved game. Default to NOVICE if it's not there
+        // Get the current game skill level from the preferences, if we didn't get a saved game.
+        // Default to NOVICE if it's not there
         if (!restored)
         {
             gameSkill = null;
@@ -219,8 +211,10 @@ public class MainActivity extends AppCompatActivity
     protected void onRestart()
     {
         Log.i(TAG, "onRestart()");
-        Log.i("AnimationTest","onRestart() called, setting animation to: " + SettingsActivity2.AnimationState);
-        setAnimEnable(SettingsActivity2.AnimationState);
+        Log.i("AnimationTest","onRestart() called, setting animation to: " + SettingsActivity.AnimationState);
+        boardView.setAnimEnable(SettingsActivity.AnimationState);
+        soundMode = SettingsActivity.SoundState();
+        //setSoundMode(SettingsActivity.SoundState());
         super.onRestart();
     }
 
@@ -287,8 +281,9 @@ public class MainActivity extends AppCompatActivity
 
         // Display the skill level
         statusMode.setText(gameSkill.label);
-        Log.i("AnimationTest", "onResume() should now set the animation state to " + SettingsActivity2.AnimationState);
-        setAnimEnable(SettingsActivity2.AnimationState);
+        Log.i("AnimationTest", "onResume() should now set the animation state to " + SettingsActivity.AnimationState);
+        boardView.setAnimEnable(SettingsActivity.AnimationState);
+        soundMode = SettingsActivity.SoundState();
 
         // If we restored a state, go to that state. Otherwise start at the welcome screen
         if (gameState == State.NEW)
@@ -515,7 +510,7 @@ public class MainActivity extends AppCompatActivity
 
         // GUI is created, state is restored (if any), and re-sync the options menus
         selectCurrentSkill();
-        selectSoundMode();
+        //selectSoundMode();
 
         return true;
     }
@@ -531,7 +526,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void selectSoundMode()
+    /*private void selectSoundMode()
     {
         // Set the sound enable menu item to the current state.
         if (mainMenu != null)
@@ -541,7 +536,7 @@ public class MainActivity extends AppCompatActivity
             if (soundItem != null)
                 soundItem.setChecked(true);
         }
-    }
+    }*/
 
     void selectAutosolveMode(boolean solving)
     {
@@ -613,22 +608,13 @@ public class MainActivity extends AppCompatActivity
             case R.id.skill_insane:
                 startGame(Skill.INSANE);
                 break;
-            case R.id.sounds_off:
-                setSoundMode(SoundMode.NONE);
-                break;
-            case R.id.sounds_qt:
-                setSoundMode(SoundMode.QUIET);
-                break;
-            case R.id.sounds_on:
-                setSoundMode(SoundMode.FULL);
-                break;
             case R.id.menu_autosolve:
                 solverUsed = true;
                 boardView.autosolve();
                 break;
             case R.id.menu_settings:
                 Intent settingsIntent = new Intent();
-                settingsIntent.setClass(this, SettingsActivity2.class);
+                settingsIntent.setClass(this, SettingsActivity.class);
                 startActivity(settingsIntent);
             default:
                 return super.onOptionsItemSelected(item);
@@ -637,42 +623,16 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    private void setSoundMode(SoundMode mode)
-    {
-        soundMode = mode;
-
-        // Save the new setting to prefs
-        SharedPreferences prefs = getPreferences(0);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("soundMode", "" + soundMode);
-        editor.apply();
-
-        selectSoundMode();
-    }
-
-    public void setAnimEnable(boolean enable)
-    {
-        //animEnable = enable;
-        Log.i("AnimationTest", "setAnimEnable() has been called with " + SettingsActivity2.AnimationState);
-        boardView.setAnimEnable(SettingsActivity2.AnimationState);
-
-        // Save the new setting to prefs.
-        /*SharedPreferences prefs = getPreferences(0);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("animEnable", animEnable);
-        editor.apply();*/
-    }
-
     // ******************************************************************** //
-    // Game progress.
+    // Game progress
     // ******************************************************************** //
 
     //This method is called each time the user clicks a cell
     void cellClicked(Cell cell)
     {
         // Count the click, but only if this isn't a repeat click on the same cell
-        // This is because the tap interface only rotatesclockwise, and it's not fair
-        // to count an anti-clockwise turn as 3 clicks
+        // This is because the tap interface only rotatesclockwise, and it's not fair to count an
+        // anti-clockwise turn as 3 clicks
         if (!isSolved && cell != prevClickedCell)
         {
             ++clickCount;
@@ -682,7 +642,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     // ******************************************************************** //
-    // Game Control Functions.
+    // Game Control Functions
     // ******************************************************************** //
 
     //Wake up: the user has clicked the splash screen, so continue
@@ -700,19 +660,17 @@ public class MainActivity extends AppCompatActivity
     private final DialogInterface.OnClickListener startGameListener = (arg0, arg1) -> setState(State.RUNNING, true);
 
     /**
-     * Start a game at a given skill level, or the previous skill level. The
-     * skill level chosen is saved to the preferences and becomes the default
-     * for next time.
+     * Start a game at a given skill level, or the previous skill level. The skill level chosen is
+     * saved to the preferences and becomes the default for next time
      *
-     * @param sk Skill level to start at; if null, use the previous skill from
-     *           the preferences.
+     * @param sk Skill level to start at; if null, use the previous skill from the preferences
      */
     public void startGame(BoardView.Skill sk)
     {
         // Abort any existing game, so we know we're not just continuing
         setState(State.ABORTED, false);
 
-        // Sort out the previous and new skills. If we aren't given a new skill, default to previous
+        // Sort out the previous and new skills. Default to previous if no new skill
         BoardView.Skill prevSkill = gameSkill;
         gameSkill = sk != null ? sk : prevSkill;
 
@@ -729,8 +687,7 @@ public class MainActivity extends AppCompatActivity
         // OK, now get going!
         Log.i(TAG, "startGame: " + gameSkill + " (was " + prevSkill + ")");
 
-        // If we're going up to master or insane level, set up a message
-        // to display the user to show him/her the new rules.
+        // If we're going up to master or insane level, set up a dialog to display the new rules
         int msg = 0;
         if (prevSkill != BoardView.Skill.INSANE)
         {
@@ -740,8 +697,8 @@ public class MainActivity extends AppCompatActivity
                 msg = R.string.help_master;
         }
 
-        // If we have a help message to show, show it; the dialog will start the
-        // game (and hence the clock) when the user is ready. Otherwise, start the game now
+        // If we have a help message to show, show it; the dialog will start the game (and hence the
+        // clock) when the user is ready. Otherwise, start the game now
         if (msg != 0)
             new AlertDialog.Builder(this).setMessage(msg)
                     .setPositiveButton(R.string.button_ok, startGameListener)
@@ -751,7 +708,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     // ******************************************************************** //
-    // Game State.
+    // Game State
     // ******************************************************************** //
 
     //Post a state change
@@ -770,12 +727,10 @@ public class MainActivity extends AppCompatActivity
     };
 
     /**
-     * Set the game state. Set the screen display and start/stop the clock as
-     * appropriate.
+     * Set the game state. Set the screen display and start/stop the clock as appropriate
      *
-     * @param state      The state to go into.
-     * @param showSplash If true, show the "pause" screen if appropriate. Otherwise
-     *                   don't.
+     * @param state      The state to go into
+     * @param showSplash If true, show the "pause" screen if appropriate. Otherwise don't
      */
     private void setState(State state, boolean showSplash)
     {
@@ -890,7 +845,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     // ******************************************************************** //
-    // User Input.
+    // User Input
     // ******************************************************************** //
 
     /**
@@ -904,8 +859,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onBackPressed()
     {
-        // Go to the home screen. This causes our state to be saved, whereas
-        // the default of finish() discards it.
+        // Go to the home screen. This causes our state to be saved, whereas the default of finish()
+        // discards it
         Intent homeIntent = new Intent();
         homeIntent.setAction(Intent.ACTION_MAIN);
         homeIntent.addCategory(Intent.CATEGORY_HOME);
@@ -913,14 +868,14 @@ public class MainActivity extends AppCompatActivity
     }
 
     // ******************************************************************** //
-    // Status Display.
+    // Status Display
     // ******************************************************************** //
 
     //Update the status line to the current game state
     void updateStatus()
     {
-        // Use StringBuilders and a Formatter to avoid allocating new
-        // String objects every time -- this function is called often!
+        // Use StringBuilders and a Formatter to avoid allocating new string objects every time
+        // This function is called often!
 
         clicksText.setLength(3);
         clicksText.setCharAt(0, (char) ('0' + clickCount / 100 % 10));
@@ -970,7 +925,7 @@ public class MainActivity extends AppCompatActivity
             soundHandler.postDelayed(startRunner, 0);
         } else
         {
-            // Make sure we're running -- we can get here after a restart
+            // Make sure we're running - we can get here after a restart
             boardView.surfaceStart();
         }
     }
@@ -985,20 +940,20 @@ public class MainActivity extends AppCompatActivity
     };
 
     // ******************************************************************** //
-    // High Scores.
+    // High Scores
     // ******************************************************************** //
 
     /**
      * Check to see if we need to register a new "high score" (personal best).
      *
      * @param skill   The skill level of the completed puzzle.
-     * @param ntiles  The actual number of tiles in the board. This indicates the
+     * @param NumberOfTiles  The actual number of tiles in the board. This indicates the
      *                actual difficulty level on the specific device.
      * @param clicks  The user's click count.
      * @param seconds The user's time in SECONDS.
      * @return Message to display to the user. Null if nothing to report.
      */
-    private String registerScore(BoardView.Skill skill, int ntiles, int clicks, int seconds)
+    private String registerScore(BoardView.Skill skill, int NumberOfTiles, int clicks, int seconds)
     {
         // Get the names of the prefs for the counts for this skill level
         String sizeName = "size" + skill.toString();
@@ -1016,14 +971,14 @@ public class MainActivity extends AppCompatActivity
         String msg = null;
         if (clicks > 0 && (bestClicks < 0 || clicks < bestClicks))
         {
-            editor.putInt(sizeName, ntiles);
+            editor.putInt(sizeName, NumberOfTiles);
             editor.putInt(clickName, clicks);
             editor.putLong(clickName + "Date", now);
             msg = appResources.getString(R.string.best_clicks_text);
         }
         if (seconds > 0 && (bestTime < 0 || seconds < bestTime))
         {
-            editor.putInt(sizeName, ntiles);
+            editor.putInt(sizeName, NumberOfTiles);
             editor.putInt(timeName, seconds);
             editor.putLong(timeName + "Date", now);
             if (msg == null)
@@ -1039,7 +994,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     // ******************************************************************** //
-    // Sound.
+    // Sound
     // ******************************************************************** //
 
     //Create a SoundPool containing the app's sound effects
@@ -1119,33 +1074,33 @@ public class MainActivity extends AppCompatActivity
     /**
      * Restore our game state from the given Bundle.
      *
-     * @param map A Bundle containing the saved state.
+     * @param savedInstanceState A Bundle containing the saved state.
      * @return true if the state was restored OK; false if the saved state was
      * incompatible with the current configuration.
      */
-    private boolean restoreState(Bundle map)
+    private boolean restoreState(Bundle savedInstanceState)
     {
         // Get the skill level and game state
-        gameSkill = Skill.valueOf(map.getString("gameSkill"));
-        gameState = State.valueOf(map.getString("gameState"));
-        isSolved = map.getBoolean("isSolved");
+        gameSkill = Skill.valueOf(savedInstanceState.getString("gameSkill"));
+        gameState = State.valueOf(savedInstanceState.getString("gameState"));
+        isSolved = savedInstanceState.getBoolean("isSolved");
 
         // Restore the state of the game board
-        boolean restored = boardView.restoreState(map, gameSkill);
+        boolean restored = boardView.restoreState(savedInstanceState, gameSkill);
 
         // Restore the game timer and click count
         if (restored)
         {
-            restored = gameTimer.restoreState(map, false);
-            clickCount = map.getInt("clickCount");
-            solverUsed = map.getBoolean("solverUsed");
+            restored = gameTimer.restoreState(savedInstanceState, false);
+            clickCount = savedInstanceState.getInt("clickCount");
+            solverUsed = savedInstanceState.getBoolean("solverUsed");
         }
 
         return restored;
     }
 
     // ******************************************************************** //
-    // Private Types.
+    // Private Types
     // ******************************************************************** //
 
     // This class implements the game clock. All it does is update the status each tick
@@ -1169,27 +1124,28 @@ public class MainActivity extends AppCompatActivity
     }
 
     // ******************************************************************** //
-    // Class Data.
+    // Class Data
     // ******************************************************************** //
 
     private static final String TAG = "netscramble"; // Debugging tag
-    private Resources appResources;                 // The app's resources
+    private Resources appResources;                  // The app's resources
 
-    private BoardView.Skill gameSkill;                 // The currently selected skill level
+    private BoardView.Skill gameSkill;               // The currently selected skill level
     private State gameState;                         // The state of the current game
     private SoundPool soundPool;                     // Sound pool used for sound effects
     private GameTimer gameTimer;                     // Timer used to time the game
     private SoundMode soundMode;                     // Current sound mode
-    private int clickCount = 0;                         // Number of times the user has clicked
-    private boolean solverUsed = false;                 // Has the auto-solver been invoked
+    private int clickCount = 0;                      // Number of times the user has clicked
+    private boolean solverUsed = false;              // Has the auto-solver been invoked
+    public BoardView boardView = null;               // The game board
 
     // The status bar, consisting of 3 status fields
     private TextView statusClicks;
     private TextView statusMode;
     private TextView statusTime;
 
-    // Text buffers used to format the click count and time. We allocate these here, so
-    // we don't allocate new String objects every time we update the status, which is very often
+    // Text buffers used to format the click count and time. We allocate these here, so we don't
+    // allocate new String objects every time we update the status, which is very often
     private StringBuilder clicksText;
     private StringBuilder timeText;
 
@@ -1205,16 +1161,12 @@ public class MainActivity extends AppCompatActivity
     // When gameState == State.RESTORED, this is our restored game state.
     private State restoredGameState;
 
-    // Flag whether the board has been solved. Once solved, the user can keep playing, but
-    // we don't count score any more
+    // Flag whether the board has been solved. Once solved, the user can keep playing, but we don't
+    // count score any more
     private boolean isSolved;
 
     // The previous cell that was clicked. Used to detect multiple clicks on the same cell
     private Cell prevClickedCell = null;
 
-    //public boolean animEnable; // True to enable the network animation
 
-    public BoardView boardView = null; // The game board
-
-    private SharedPreferences newPrefs;
 }

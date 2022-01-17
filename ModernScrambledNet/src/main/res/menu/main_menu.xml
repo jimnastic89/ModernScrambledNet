@@ -30,14 +30,14 @@
     <item android:id="@+id/menu_autosolve" android:title="@string/menu_autosolve" />
 
     <!-- Sound  -->
-    <item android:id="@+id/sound_menu" android:title="@string/menu_sound">
+    <item android:id="@+id/sound_menu" android:title="@string/menu_sound" android:visible="false">
         <menu>
             <group android:id="@+id/sound_group" android:checkableBehavior="single">
 
                 <item android:id="@+id/sounds_off" android:title="@string/no_sounds" />
                 <item android:id="@+id/sounds_qt" android:title="@string/quiet_sounds" />
                 <item android:id="@+id/sounds_on" android:title="@string/play_sounds" />
-                
+
             </group>
         </menu>
     </item>

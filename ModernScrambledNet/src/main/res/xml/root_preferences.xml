@@ -2,46 +2,45 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <SwitchPreferenceCompat
-        app:key="sync"
+        app:key="AnimationPreference"
         app:title="@string/menu_anim"
         android:summaryOn="Network activity animations enabled"
         android:summaryOff="Network activity animations disabled" />
 
     <ListPreference
-        android:defaultValue="1"
-        android:entries="@array/reply_entries"
-        android:entryValues="@array/reply_values"
-        android:key="list_preference_1"
+        android:key="SoundPreference"
         android:title="Volume Level"
-        android:summary="%s"/>
+        android:entries="@array/SoundPreference_Names"
+        android:entryValues="@array/SoundPreference_Values"
+        app:useSimpleSummaryProvider="true"/>
 
-    <PreferenceCategory app:title="@string/boardsize_header">
+    <!--PreferenceCategory app:title="@string/boardsize_header">
 
         <EditTextPreference
-            app:key="signature"
+            app:key="Easy"
             app:title="@string/skill_novice"
             app:useSimpleSummaryProvider="true" />
 
         <EditTextPreference
-            app:key="signature"
+            app:key="Normal"
             app:title="@string/skill_normal"
             app:useSimpleSummaryProvider="true" />
 
         <EditTextPreference
-            app:key="signature"
+            app:key="Hard"
             app:title="@string/skill_expert"
             app:useSimpleSummaryProvider="true" />
 
         <EditTextPreference
-            app:key="signature"
+            app:key="Harder"
             app:title="@string/skill_master"
             app:useSimpleSummaryProvider="true" />
 
         <EditTextPreference
-            app:key="signature"
+            app:key="Insane"
             app:title="@string/skill_insane"
             app:useSimpleSummaryProvider="true" />
 
-    </PreferenceCategory>
+    </PreferenceCategory-->
 
 </PreferenceScreen>

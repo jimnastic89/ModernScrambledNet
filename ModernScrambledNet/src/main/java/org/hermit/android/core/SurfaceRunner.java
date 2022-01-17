@@ -581,7 +581,6 @@ public abstract class SurfaceRunner
         return Bitmap.createBitmap(canvasWidth, canvasHeight, canvasConfig);
     }
 
-
     /**
      * Determine whether the caller is on the surface's animation thread
      *

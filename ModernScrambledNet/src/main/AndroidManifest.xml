@@ -18,7 +18,7 @@
         android:label="@string/title"
         android:theme="@style/Theme.AppCompat">
         <activity
-            android:name=".SettingsActivity2"
+            android:name=".SettingsActivity"
             android:exported="false"
             android:label="@string/title_activity_settings2" />
         <activity
