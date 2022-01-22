@@ -16,11 +16,11 @@
         android:description="@string/description"
         android:icon="@drawable/netscramble"
         android:label="@string/title"
-        android:theme="@style/Theme.AppCompat">
+        android:theme="@style/Theme.AppCompat.DayNight">
         <activity
             android:name=".SettingsActivity"
             android:exported="false"
-            android:label="@string/title_activity_settings2" />
+            android:label="@string/settings_title" />
         <activity
             android:name=".HelpActivity"
             android:exported="false" />

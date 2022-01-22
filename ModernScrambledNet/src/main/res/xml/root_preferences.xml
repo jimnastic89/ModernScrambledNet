@@ -14,14 +14,20 @@
         android:entryValues="@array/SoundPreference_Values"
         app:useSimpleSummaryProvider="true"/>
 
-    <!--PreferenceCategory app:title="@string/boardsize_header">
+    <PreferenceCategory
+        android:key="BoardSizePreference"
+        app:title="@string/boardsize_header">
 
         <EditTextPreference
-            app:key="Easy"
-            app:title="@string/skill_novice"
+            android:key="EasyHeightPreference"
+            android:title="Easy Height"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            android:key="EasyWidthPreference"
+            android:title="Easy Width"
             app:useSimpleSummaryProvider="true" />
 
-        <EditTextPreference
+        <!--EditTextPreference
             app:key="Normal"
             app:title="@string/skill_normal"
             app:useSimpleSummaryProvider="true" />
@@ -39,8 +45,8 @@
         <EditTextPreference
             app:key="Insane"
             app:title="@string/skill_insane"
-            app:useSimpleSummaryProvider="true" />
+            app:useSimpleSummaryProvider="true" /-->
 
-    </PreferenceCategory-->
+    </PreferenceCategory>
 
 </PreferenceScreen>

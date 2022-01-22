@@ -1,15 +1,22 @@
 package com.jimnastic.modernscramblednet;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.EditText;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 public class SettingsActivity extends AppCompatActivity
 {
+    public static Integer EasyHeight;
+    public static Integer EasyWidth;
     public static boolean AnimationState;
     public static String SoundString;
     public static MainActivity.SoundMode SoundState()
@@ -35,7 +42,6 @@ public class SettingsActivity extends AppCompatActivity
             actionBar.setDisplayHomeAsUpEnabled(false);
         }
 
-
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat
@@ -47,21 +53,37 @@ public class SettingsActivity extends AppCompatActivity
 
             Preference animation = findPreference("AnimationPreference");
             Preference sound = findPreference("SoundPreference");
+            Preference easyHeight = findPreference("EasyHeightPreference");
+            Preference easyWidth = findPreference("EasyWidthPreference");
 
+            assert animation != null;
             animation.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    Log.i("AnimationTest","Animation setting has been changed to: " + newValue);
+                    Log.i(MainActivity.TAG,"Animation setting has been changed to: " + newValue);
                     AnimationState = (boolean) newValue;
                     return true;
                 }
             });
 
+            assert sound != null;
             sound.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     SoundString = newValue.toString();
-                    Log.i(null,"Sound setting has been changed to: " + SoundString);
+                    Log.i(MainActivity.TAG,"Sound setting has been changed to: " + SoundString);
+                    return true;
+                }
+            });
+
+            easyHeight.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener()
+            {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue)
+                {
+                    EasyHeight = Integer.parseInt(newValue.toString());
+                    Log.i(MainActivity.TAG,"EasyHeight setting has been changed to: " + EasyHeight);
+
                     return true;
                 }
             });

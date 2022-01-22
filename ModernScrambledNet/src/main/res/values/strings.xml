@@ -72,13 +72,10 @@
     <string name="win_finish">Tap "New Game" for a new game, or "Continue" to experiment with this layout</string>
     <string name="win_new">New Game</string>
     <string name="win_continue">Continue</string>
-    <string name="about_title">About</string>
 
     <!-- Button strings -->
     <string name="button_ok">OK</string>
     <string name="button_close">Close</string>
-    <string name="button_license">Show license</string>
-    <string name="button_homepage">Home page</string>
 
     <!-- Menu strings -->
     <string name="menu_game_new">New game</string>
@@ -94,20 +91,13 @@
     <string name="no_sounds">Mute</string>
     <string name="quiet_sounds">Quiet</string>
     <string name="play_sounds">Loud</string>
-    <string name="anim_off">Off</string>
-    <string name="anim_on">On</string>
 
-    <!-- Skill levels. -->
-    <string name="skill_mode">Mode</string>
+    <!-- Skill levels -->
     <string name="skill_novice">Easy</string>
     <string name="skill_normal">Normal</string>
     <string name="skill_expert">Hard</string>
     <string name="skill_master">Harder</string>
     <string name="skill_insane">Insane</string>
-
-    <!-- URLs. -->
-    <string name="url_license">http://www.gnu.org/licenses/gpl-2.0.html</string>
-    <string name="url_homepage">https://www.silentservices.de</string>
 
     <!-- Help texts -->
     <string name="help_intro">
@@ -265,19 +255,9 @@
         </item>
 
     </string>
-    <string name="title_activity_settings">SettingsActivity</string>
 
     <!-- Preference Titles -->
     <string name="boardsize_header">Board Sizes</string>
-
-    <!-- Messages Preferences -->
-
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
-    <string name="title_activity_settings2">SettingsActivity2</string>
+    <string name="settings_title">Settings</string>
 
 </resources>

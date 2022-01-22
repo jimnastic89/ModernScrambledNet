@@ -5,12 +5,11 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 
 import com.jimnastic.modernscramblednet.MainActivity.Sound;
 
@@ -24,27 +23,33 @@ import java.util.Vector;
 /**
  * This implements the game board by laying out a grid of Cell objects.
  * <p>
- * Unlike the original knetwalk, we have to deal with a physical display whose
- * size can vary dramatically, but which we would like to fill; on the other
- * hand, it may be too small for a "full-sized" game, particularly bearing in
- * mind the minimum size a cell can be and still allow a finger to select it. We
- * therefore put a lot of work into figuring out how big the board should be.
+ * Unlike the original knetwalk, we have to deal with a physical display whose size can vary
+ * dramatically, but which we would like to fill; on the other hand, it may be too small for a
+ * "full-sized" game, particularly bearing in mind the minimum size a cell can be and still allow a
+ * finger to select it. We therefore put a lot of work into figuring out how big the board should be
  */
 public class BoardView
     extends SurfaceRunner
 {
+    // #4 - Called from MainActivity.onCreate()
+    //Enable or disable the network animation
+    void setAnimEnable(boolean enable)
+    {
+        Log.v(MainActivity.TAG, "BoardView.setAnimEnable(" + enable + ")");
+        drawBlips = enable;
+    }
+
     // ******************************************************************** //
-    // Public Types.
+    // Public Types
     // ******************************************************************** //
 
     /**
-     * Enumeration defining a game skill level. Each enum member also stores the
-     * configuration parameters for that skill level. We also introduce the
-     * wrinkle of blind tiles, to make an insane level:
+     * Enumeration defining a game skill level. Each enum member also stores the configuration
+     * parameters for that skill. We also introduce blind tiles, to make an insane level
      */
     enum Skill
     {
-        // Skill name, ID of the menu item, brch, does the board wrap?, cells with over this many connections are blind
+        // Skill, Menu item ID, brch, does board wrap?, cells with over this many connections are blind
         NOVICE(R.string.skill_novice, R.id.skill_novice, 2, false, 9),
         NORMAL(R.string.skill_normal, R.id.skill_normal, 2, false, 9),
         EXPERT(R.string.skill_expert, R.id.skill_expert, 2, false, 9),
@@ -68,20 +73,20 @@ public class BoardView
     }
 
     /**
-     * This enum defines the board sizes for the supported screen layouts.
-     * Traditional knetwalk has these board sizes: Novice: 5x5 = 25 tiles = 31%
-     * Normal: 7x7 = 49 tiles = 60% Expert: 9x9 = 81 tiles = 100% Master: 9x9 =
-     * 81 tiles = 100% wrapped
+     * This enum defines the board sizes for the supported screen layouts
      * <p>
-     * We have to deal with various screen sizes, and we want the cells to be
-     * big enough to touch. So, to set the board sizes, we choose either SMALL,
-     * MEDIUM, or LARGE based on the physical screen size. Then, sizes[skill][0]
-     * is the major grid size for that skill, and sizes[skill][1] is the minor
-     * grid size for that skill.
+     * We have to deal with various screen sizes, and we want the cells to be big enough to touch.
+     * So, to set the board sizes, we choose either SMALL, MEDIUM, or LARGE based on the physical
+     * screen size. Then, sizes[skill][0] is the major grid size for that skill, and sizes[skill][1]
+     * is the minor grid size for that skill
      */
     enum Screen
     {
-        HUGE(17, 10, 15, 8, 11, 8, 7, 6);
+        // Width/Height
+        HUGE(17, 10, // Master/Insane
+             15, 8,   // Expert
+             11, 8,   // Normal
+             10, 8);  // Novice
 
         Screen(int ml, int ms, int el, int es, int nl, int ns, int vl, int vs)
         {
@@ -99,41 +104,43 @@ public class BoardView
             sizes[Skill.NOVICE.ordinal()][1] = vs;
         }
 
-        int getBoardWidth(Skill sk, int gw, int gh)
+        // skill level, gw, gh
+        int getBoardWidth(Skill skill, int GridWidth, int GridHeight)
         {
-            if (gw > gh)
-                return sizes[sk.ordinal()][0];
+            if (GridWidth > GridHeight)
+                return sizes[skill.ordinal()][0];
             else
-                return sizes[sk.ordinal()][1];
+                return sizes[skill.ordinal()][1];
         }
 
-        int getBoardHeight(Skill sk, int gw, int gh)
+        int getBoardHeight(Skill skill, int GridWidth, int GridHeight)
         {
-            if (gw > gh)
-                return sizes[sk.ordinal()][1];
+            if (GridWidth > GridHeight)
+                return sizes[skill.ordinal()][1];
             else
-                return sizes[sk.ordinal()][0];
+                return sizes[skill.ordinal()][0];
         }
 
-        private final int major;
-        private final int minor;
+        private int major;
+        private int minor;
         private final int[][] sizes = new int[Skill.values().length][2];
     }
 
     // ******************************************************************** //
-    // Constructor.
+    // Constructor
     // ******************************************************************** //
 
     /**
-     * Construct a board view.
+     * Construct a board view
      *
-     * @param context The context we're running in.
-     * @param attrs   Our layout attributes.
+     * @param context The context we're running in
+     * @param attrs   Our layout attributes
      */
     public BoardView(Context context, AttributeSet attrs)
     {
         super(context, attrs);
-
+        Log.i(MainActivity.TAG, "BoardView constructor");
+        Log.v(MainActivity.TAG, "BoardView(" + context + "," + attrs + ")");
         try
         {
             MainActivity parent = (MainActivity) context;
@@ -144,24 +151,29 @@ public class BoardView
         }
     }
 
+
+
     /**
-     * Initialise this board view.
+     * Initialise this board view
      *
-     * @param parent The application context we're running in.
+     * @param parent The application context we're running in
      */
     private void init(MainActivity parent)
     {
+        Log.i(MainActivity.TAG, "BoardView.init(" + parent + ")");
         parentApp = parent;
 
         // Animation delay
-        setDelay(30);
+        Log.i(MainActivity.TAG, "SurfaceRunner.animationDelay = 30");
+        SurfaceRunner.animationDelay = 20;
+        //setDelay(30);
 
         // Calculate the size and shape of the cell matrix
-        findMatrix();
+        FindMaximumGridforScreenSize();
 
         // Create all the cells in the calculated board. In appSize() we will take care of
         // positioning them. Set the cell grid and root so we have a valid state to save
-        Log.i(TAG, "Create board " + gridWidth + "x" + gridHeight);
+        Log.i(MainActivity.TAG, "Create board " + gridWidth + "x" + gridHeight);
         cellMatrix = new Cell[gridWidth][gridHeight];
         for (int y = 0; y < gridHeight; ++y)
         {
@@ -182,27 +194,38 @@ public class BoardView
     }
 
     //Find the size of board that can fit in the window
-    private void findMatrix()
+    private void FindMaximumGridforScreenSize()
     {
+        Log.i(MainActivity.TAG,"BoardView.FindMaximumGridforScreenSize()");
         DisplayMetrics display = this.getResources().getDisplayMetrics();
 
         int width = display.widthPixels;
         int height = display.heightPixels;
+        Integer customWidth = SettingsActivity.EasyWidth;
+        Integer customHeight = SettingsActivity.EasyHeight;
+
+        if (customWidth != null)
+            Screen.HUGE.major = customWidth;
+        if (customHeight != null)
+            Screen.HUGE.minor = customHeight;
+
 
         if (width > height)
         {
-            gridWidth = screenConfig.major;
-            gridHeight = screenConfig.minor;
-        } else
-        {
-            gridWidth = screenConfig.minor;
-            gridHeight = screenConfig.major;
+            gridWidth = Screen.HUGE.major;
+            gridHeight = Screen.HUGE.minor;
         }
-        Log.v(TAG, "findMatrix: screen=" + width + "x" + height + " -> " + screenConfig);
+        else
+        {
+            gridWidth = Screen.HUGE.minor;
+            gridHeight = Screen.HUGE.major;
+        }
+        Log.i(MainActivity.TAG,"Game board will be " + gridHeight + " high x " + gridWidth + " wide");
+        Log.v(MainActivity.TAG, "findMatrix: screen=" + width + "x" + height + " -> " + Screen.HUGE);
     }
 
     // ******************************************************************** //
-    // Run Control.
+    // Run Control
     // ******************************************************************** //
 
     /**
@@ -213,7 +236,7 @@ public class BoardView
     @Override
     protected void appStart()
     {
-
+        Log.v(MainActivity.TAG, "BoardView.appStart()");
     }
 
     /**
@@ -228,6 +251,7 @@ public class BoardView
     @Override
     protected void appSize(int width, int height, Bitmap.Config config)
     {
+        Log.v(MainActivity.TAG, "BoardView.appSize(" + width + "," + height + "," + config + ")");
         // We usually get a zero-sized resize, which is useless; ignore it
         if (width < 1 || height < 1)
             return;
@@ -254,7 +278,7 @@ public class BoardView
         }
 
         // Set up the board configuration
-        Log.i(TAG, "Layout board " + gridWidth + "x" + gridHeight + ", cells " + cellWidth + "x" + cellHeight);
+        Log.i(MainActivity.TAG, "Layout board " + gridWidth + "x" + gridHeight + ", cells " + cellWidth + "x" + cellHeight);
 
         // Center the board in the window
         paddingX = (width - gridWidth * cellWidth) / 2;
@@ -284,7 +308,7 @@ public class BoardView
     @Override
     protected void animStart()
     {
-
+        Log.v(MainActivity.TAG, "BoardView.animStart()");
     }
 
     /**
@@ -296,29 +320,21 @@ public class BoardView
     @Override
     protected void animStop()
     {
-
+        Log.v(MainActivity.TAG, "BoardView.animStop()");
     }
 
     //The application is closing down. Clean up any resources
     @Override
     protected void appStop()
     {
-
+        Log.v(MainActivity.TAG, "BoardView.appStop()");
     }
 
     // ******************************************************************** //
     // Board Setup.
     // ******************************************************************** //
 
-    /**
-     * Enable or disable the network animation.
-     *
-     * @param enable New network animation enablement state.
-     */
-    void setAnimEnable(boolean enable)
-    {
-        drawBlips = enable;
-    }
+
 
     /**
      * Set up the board for a new game.
@@ -327,6 +343,7 @@ public class BoardView
      */
     public void setupBoard(Skill sk)
     {
+        Log.v(MainActivity.TAG, "BoardView.setupBoard()");
         autosolveStop();
         gameSkill = sk;
 
@@ -340,7 +357,7 @@ public class BoardView
         int tries, cells = 0;
         for (tries = 0; cells < minCells && tries < 10; ++tries)
             cells = createNet(sk);
-        Log.i(TAG, "Created net in " + tries + " tries with " + cells + " cells (min " + minCells + ")");
+        Log.i(MainActivity.TAG, "Created net in " + tries + " tries with " + cells + " cells (min " + minCells + ")");
 
         // Now, save the "solved" state of the board.
         solvedState = new Bundle();
@@ -357,41 +374,41 @@ public class BoardView
             }
         }
 
-        // Figure out the active connections.
+        // Figure out the active connections
         updateConnections();
 
-        // Invalidate all the cells.
+        // Invalidate all the cells
         for (int x = 0; x < gridWidth; x++)
             for (int y = 0; y < gridHeight; y++)
                 cellMatrix[x][y].invalidate();
     }
 
     /**
-     * Reset the board for a given skill level.
+     * Reset the board for a given skill level
      *
-     * @param sk Skill level for the game; set the board up accordingly.
+     * @param sk Skill level for the game; set the board up accordingly
      */
     private void resetBoard(Skill sk)
     {
-        // Save the width and height of the playing board for this skill
-        // level, and the board placement within the overall cell grid.
-        boardWidth = screenConfig.getBoardWidth(sk, gridWidth, gridHeight);
-        boardHeight = screenConfig.getBoardHeight(sk, gridWidth, gridHeight);
+        // Save the width and height of the playing board for this skill level, and the board
+        // placement within the overall cell grid
+        boardWidth = Screen.HUGE.getBoardWidth(sk, gridWidth, gridHeight);
+        boardHeight = Screen.HUGE.getBoardHeight(sk, gridWidth, gridHeight);
         boardStartX = (gridWidth - boardWidth) / 2;
         boardEndX = boardStartX + boardWidth;
         boardStartY = (gridHeight - boardHeight) / 2;
         boardEndY = boardStartY + boardHeight;
 
-        // Reset the cells. If we're wrapped, set the surrounding cells
-        // to None; else Free, to show that there's no wraparound.
-        Log.i(TAG, "Reset board " + gridWidth + "x" + gridHeight);
+        // Reset the cells. If we're wrapped, set the surrounding cells to None; else Free, to show
+        // that there's no wraparound
+        Log.i(MainActivity.TAG, "Reset board " + gridWidth + "x" + gridHeight);
         boolean wrap = gameSkill.wrapped;
         Cell u, d, l, r;
         for (int x = 0; x < gridWidth; x++)
         {
             for (int y = 0; y < gridHeight; y++)
             {
-                cellMatrix[x][y].reset(wrap ? Cell.Dir.NONE : Cell.Dir.FREE);
+                cellMatrix[x][y].reset(wrap ? Cell.CellDirection.NONE : Cell.CellDirection.FREE);
 
                 // Re-calculate who this cell's neighbours are
                 u = d = l = r = null;
@@ -437,14 +454,19 @@ public class BoardView
      */
     private int createNet(Skill sk)
     {
-        Log.i(TAG, "Create net " + boardStartX + "-" + boardEndX + ", " + boardStartY + "-" + boardEndY);
+        Log.i(MainActivity.TAG, "_" +
+                        "\r\n Drawing playable area on grid" +
+                        "\r\n x start = " + boardStartX +
+                        "\r\n x end   = " + boardEndX +
+                        "\r\n y start = " + boardStartY +
+                        "\r\n y end   = " + boardEndY);
 
         // Reset the cells' directions, and reset the root cell
         for (int x = boardStartX; x < boardEndX; x++)
         {
             for (int y = boardStartY; y < boardEndY; y++)
             {
-                cellMatrix[x][y].setDirs(Cell.Dir.FREE);
+                cellMatrix[x][y].setDirs(Cell.CellDirection.FREE);
                 cellMatrix[x][y].setRoot(false);
             }
         }
@@ -491,10 +513,10 @@ public class BoardView
         int cells = 0;
         for (int x = boardStartX; x < boardEndX; x++)
             for (int y = boardStartY; y < boardEndY; y++)
-                if (cellMatrix[x][y].dirs() != Cell.Dir.FREE)
+                if (cellMatrix[x][y].dirs() != Cell.CellDirection.FREE)
                     ++cells;
 
-        Log.i(TAG, "Created net with " + cells + " cells");
+        Log.i(MainActivity.TAG, "Created net with " + cells + " cells");
         return cells;
     }
 
@@ -514,12 +536,11 @@ public class BoardView
         Cell cell = list.firstElement();
 
         // List the adjacent cells which are free
-        EnumMap<Cell.Dir, Cell> freecells = new EnumMap<>(
-                Cell.Dir.class);
-        for (Cell.Dir d : Cell.Dir.cardinals)
+        EnumMap<Cell.CellDirection, Cell> freecells = new EnumMap<>(Cell.CellDirection.class);
+        for (Cell.CellDirection d : Cell.CellDirection.cardinals)
         {
             Cell ucell = cell.next(d);
-            if (ucell != null && ucell.dirs() == Cell.Dir.FREE)
+            if (ucell != null && ucell.dirs() == Cell.CellDirection.FREE)
                 freecells.put(d, ucell);
         }
 
@@ -530,7 +551,7 @@ public class BoardView
 
         // Pick one of the free adjacents at random
         Object[] keys = freecells.keySet().toArray();
-        Cell.Dir key = (Cell.Dir) keys[RandomNumberGenerator.nextInt(keys.length)];
+        Cell.CellDirection key = (Cell.CellDirection) keys[RandomNumberGenerator.nextInt(keys.length)];
         Cell dest = freecells.get(key);
 
         // Make a link to that cell, and a corresponding link back
@@ -579,7 +600,7 @@ public class BoardView
         {
             Cell cell = connectingCells.remove();
 
-            for (Cell.Dir d : Cell.Dir.cardinals)
+            for (Cell.CellDirection d : Cell.CellDirection.cardinals)
                 if (hasNewConnection(cell, d, isConnected))
                     connectingCells.add(cell.next(d));
         }
@@ -615,11 +636,11 @@ public class BoardView
      *             find a new connection, we will set the flag for it in here
      * @return true if we found a new connection in the given direction
      */
-    private boolean hasNewConnection(Cell cell, Cell.Dir dir, boolean[][] got)
+    private boolean hasNewConnection(Cell cell, Cell.CellDirection dir, boolean[][] got)
     {
         // Find the cell we're going to, if any
         Cell other = cell.next(dir);
-        Cell.Dir otherdir = dir.reverse;
+        Cell.CellDirection otherdir = dir.reverse;
 
         // If there's no cell there, then there's no connection. If we have already marked it connected, we're done
         if (other == null || got[other.x()][other.y()])
@@ -687,7 +708,7 @@ public class BoardView
             for (int y = boardStartY; y < boardEndY; y++)
             {
                 Cell cell = cellMatrix[x][y];
-                if (cell.dirs() != Cell.Dir.FREE && !cell.isConnected())
+                if (cell.dirs() != Cell.CellDirection.FREE && !cell.isConnected())
                     ++unused;
             }
         }
@@ -957,8 +978,8 @@ public class BoardView
     {
         // See if the cell is empty or locked; give the user some negative
         // feedback if so.
-        Cell.Dir d = cell.dirs();
-        if (d == Cell.Dir.FREE || d == Cell.Dir.NONE || cell.isLocked())
+        Cell.CellDirection d = cell.dirs();
+        if (d == Cell.CellDirection.FREE || d == Cell.CellDirection.NONE || cell.isLocked())
         {
             parentApp.postSound(Sound.CLICK);
             blink(cell);
@@ -985,8 +1006,8 @@ public class BoardView
     {
         // See if the cell is empty; give the user some negative
         // feedback if so.
-        Cell.Dir d = cell.dirs();
-        if (d == Cell.Dir.FREE || d == Cell.Dir.NONE)
+        Cell.CellDirection d = cell.dirs();
+        if (d == Cell.CellDirection.FREE || d == Cell.CellDirection.NONE)
         {
             parentApp.postSound(Sound.CLICK);
             blink(cell);
@@ -1070,7 +1091,7 @@ public class BoardView
             Cell cell = connectingCells.removeFirst();
             solveCell(cell, programmedMoves);
 
-            for (Cell.Dir d : Cell.Dir.cardinals)
+            for (Cell.CellDirection d : Cell.CellDirection.cardinals)
             {
                 if (cell.hasConnection(d))
                 {
@@ -1108,8 +1129,8 @@ public class BoardView
     private void solveCell(Cell sc, LinkedList<int[]> moves)
     {
         Cell mc = cellMatrix[sc.x()][sc.y()];
-        Cell.Dir sd = sc.dirs();
-        Cell.Dir md = mc.dirs();
+        Cell.CellDirection sd = sc.dirs();
+        Cell.CellDirection md = mc.dirs();
         if (sc.dirs() != md)
         {
             int[] move;
@@ -1405,8 +1426,8 @@ public class BoardView
 
             // Save the width and height of the playing board for this skill
             // level, and the board placement within the overall cell grid.
-            int bw = screenConfig.getBoardWidth(skill, w, h);
-            int bh = screenConfig.getBoardHeight(skill, w, h);
+            int bw = Screen.HUGE.getBoardWidth(skill, w, h);
+            int bh = Screen.HUGE.getBoardHeight(skill, w, h);
             int bsx = (w - bw) / 2;
             int bex = bsx + bw;
             int bsy = (h - bh) / 2;
@@ -1418,7 +1439,7 @@ public class BoardView
             {
                 for (int y = 0; y < h; y++)
                 {
-                    matrix[x][y].reset(wrap ? Cell.Dir.NONE : Cell.Dir.FREE);
+                    matrix[x][y].reset(wrap ? Cell.CellDirection.NONE : Cell.CellDirection.FREE);
 
                     // Re-calculate who this cell's neighbours are.
                     u = d = l = r = null;
@@ -1444,8 +1465,6 @@ public class BoardView
     // Class Data.
     // ******************************************************************** //
 
-    private static final String TAG = "netscramble";// Debugging tag
-
     private static final int LONG_PRESS = 650;// Time in ms for a long screen or centre-button press
 
     private static final long BLIPS_TIME = 300;// Time a blip takes to cross half a cell, in ms
@@ -1458,7 +1477,7 @@ public class BoardView
 
     private MainActivity parentApp;// The parent application
 
-    private Screen screenConfig = Screen.HUGE;// Screen configuration which matches the physical screen size
+    //private Screen screenConfig = Screen.HUGE;// Screen configuration which matches the physical screen size
 
     private boolean drawBlips = true;// If true, draw blips representing data moving through the network
 
@@ -1518,7 +1537,7 @@ public class BoardView
     // Long press handling. The Handler gets notified after the long press time has elapsed;
     // longPressed is set to true when a long press has been detected, so the subsequent
     // up event can be ignored
-    private Handler longPressHandler = new Handler();
+    private Handler longPressHandler = new Handler(Looper.getMainLooper());
     private boolean longPressed = false;
 
     // Programed moves - if this list is non-null and non-empty, it contains a set of moves

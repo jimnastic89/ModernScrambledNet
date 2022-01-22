@@ -1,12 +1,12 @@
 package com.jimnastic.modernscramblednet;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class HelpActivity extends AppCompatActivity
 {
@@ -23,7 +23,7 @@ public class HelpActivity extends AppCompatActivity
             @Override
             public void onClick(View v)
             {
-                Log.i("null","Class of clicked button is: " + v.getId());
+                Log.i(MainActivity.TAG,"Class of clicked button is: " + v.getId());
                 TextView help_HowToPlay_TextView = findViewById(R.id.help_HowToPlay_TextView);
                 if (help_HowToPlay_TextView.getVisibility() == View.VISIBLE)
                     help_HowToPlay_TextView.setVisibility(View.GONE);

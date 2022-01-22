@@ -1,7 +1,5 @@
 package com.jimnastic.modernscramblednet;
 
-import java.security.SecureRandom;
-
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,6 +7,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
+
+import java.security.SecureRandom;
 
 /**
  * This class implements a cell in the game board. It handles the logic and
@@ -30,7 +30,7 @@ class Cell {
 	 * if none. Note that this is the bitmap for the cabling layer, not the
 	 * background or foreground (terminal etc).
 	 */
-	enum Dir {
+	enum CellDirection {
 		FREE(0), // Unconnected cell.
 		___L(R.drawable.cable0001),
 		__D_(R.drawable.cable0010),
@@ -49,16 +49,16 @@ class Cell {
 		URDL(R.drawable.cable1111),
 		NONE(0); // Not a cell.
 
-		Dir(int img) {
+		CellDirection(int img) {
 			imageId = img;
 		}
 
-		private static Dir getDir(int bits) {
+		private static CellDirection getDir(int bits) {
 			return dirs[bits];
 		}
 
-		static final Dir[] dirs = values();
-		static final Dir[] cardinals = {
+		static final CellDirection[] dirs = values();
+		static final CellDirection[] cardinals = {
 			___L,
 			__D_,
 			_R__,
@@ -72,7 +72,7 @@ class Cell {
 		};
 
 		// The direction which is the reverse of this one.
-		Dir reverse = null;
+		CellDirection reverse = null;
 		static {
 			U___.reverse = __D_;
 			_R__.reverse = ___L;
@@ -109,7 +109,7 @@ class Cell {
 		cellPaint = new Paint();
 
 		// Reset the cell's state.
-		reset(Dir.NONE);
+		reset(CellDirection.NONE);
 	}
 
 	// ******************************************************************** //
@@ -128,7 +128,7 @@ class Cell {
 	 */
 	static void initPixmaps(Resources res, int width, int height) {
 		// Load all the cable pixmaps
-		for (Dir d : Dir.dirs) {
+		for (CellDirection d : CellDirection.dirs) {
 			if (d.imageId == 0)
 				continue;
 
@@ -145,8 +145,7 @@ class Cell {
 		// Load the other pixmaps we use
 		for (Image i : Image.values()) {
 			Bitmap base = BitmapFactory.decodeResource(res, i.resid);
-			i.bitmap = Bitmap
-					.createScaledBitmap(base, width, height, true);
+			i.bitmap = Bitmap.createScaledBitmap(base, width, height, true);
 		}
 	}
 
@@ -190,7 +189,7 @@ class Cell {
 	 * @param d
 	 *            Connection directions to set for the cell.
 	 */
-	void reset(Dir d) {
+	void reset(CellDirection d) {
 		connectedDirs = d;
 		isConnected = false;
 		isFullyConnected = false;
@@ -294,7 +293,7 @@ class Cell {
 	 * @return The next cell in the given direction; may be null, or may
 	 *         actually be at the other edge of the board if wrapping is on.
 	 */
-	Cell next(Dir d) {
+	Cell next(CellDirection d) {
 		switch (d) {
 		case U___:
 			return nextU;
@@ -319,7 +318,7 @@ class Cell {
 	 * 
 	 * @return The directions that this cell is connected to, outwards.
 	 */
-	Dir dirs() {
+	CellDirection dirs() {
 		return connectedDirs;
 	}
 
@@ -331,7 +330,7 @@ class Cell {
 	 *            The angle in degrees to rotate to; clockwise positive.
 	 * @return The directions that this cell is connected to, outwards.
 	 */
-	Dir rotatedDirs(int a) {
+	CellDirection rotatedDirs(int a) {
 		int bits = connectedDirs.ordinal();
 
 		if (a == 90)
@@ -343,7 +342,7 @@ class Cell {
 		else
 			return null;
 
-		return Dir.getDir(bits);
+		return CellDirection.getDir(bits);
 	}
 
 	/**
@@ -352,7 +351,7 @@ class Cell {
 	 * @param d	Direction(s) to check
 	 * @return	True if the cell is connected in all the given directions; else false
 	 */
-	boolean hasConnection(Dir d) {
+	boolean hasConnection(CellDirection d) {
 		return !isRotated()
 				&& (connectedDirs.ordinal() & d.ordinal()) == d.ordinal();
 	}
@@ -364,7 +363,7 @@ class Cell {
 	 * @return The number of outward connections from this cell
 	 */
 	int numDirs() {
-		if (connectedDirs == Dir.NONE)
+		if (connectedDirs == CellDirection.NONE)
 			return 0;
 
 		int bits = connectedDirs.ordinal();
@@ -384,14 +383,14 @@ class Cell {
 	 * @param d
 	 *            New connected direction to add for this cell.
 	 */
-	void addDir(Dir d)
+	void addDir(CellDirection d)
 	{
 		int bits = connectedDirs.ordinal();
 		if ((bits & d.ordinal()) == d.ordinal())
 			return;
 
 		bits |= d.ordinal();
-		setDirs(Dir.getDir(bits));
+		setDirs(CellDirection.getDir(bits));
 	}
 
 	/**
@@ -400,7 +399,7 @@ class Cell {
 	 * @param d
 	 *            New connected directions for this cell.
 	 */
-	void setDirs(Dir d)
+	void setDirs(CellDirection d)
 	{
 		if (d == connectedDirs)
 			return;
@@ -538,7 +537,7 @@ class Cell {
 	 * @param d
 	 *            Direction the blip is in, from our point of view.
 	 */
-	void setBlip(Dir d) {
+	void setBlip(CellDirection d) {
 		if (hasConnection(d))
 			blipsIncoming |= d.ordinal();
 	}
@@ -642,7 +641,7 @@ class Cell {
 			// Rotate the directions bits (the bottom 4 bits of the ordinal)
 			// right or left, as appropriate.
 			if (Math.abs(rotateAngle) >= 90f) {
-				Dir dir;
+				CellDirection dir;
 				if (rotateTarget > 0) {
 					dir = rotatedDirs(90);
 					if (rotateAngle >= rotateTarget)
@@ -700,8 +699,8 @@ class Cell {
 		// See which outgoing blips need to be transferred onto the next
 		// cell. Accumulate their directions in blipsTransfer.
 		blipsTransfer = 0;
-		for (int c = 0; c < Dir.cardinals.length; ++c) {
-			Dir d = Dir.cardinals[c];
+		for (int c = 0; c < CellDirection.cardinals.length; ++c) {
+			CellDirection d = CellDirection.cardinals[c];
 			int ord = d.ordinal();
 			if ((blipsOutgoing & ord) != 0 && hasConnection(d))
 				blipsTransfer |= ord;
@@ -711,8 +710,8 @@ class Cell {
 		// All incoming blips get deleted, and become outgoing blips on
 		// whatever directions did not have incoming blips.
 		if (blipsIncoming != 0) {
-			for (int c = 0; c < Dir.cardinals.length; ++c) {
-				Dir d = Dir.cardinals[c];
+			for (int c = 0; c < CellDirection.cardinals.length; ++c) {
+				CellDirection d = CellDirection.cardinals[c];
 				int ord = d.ordinal();
 				if ((blipsIncoming & ord) == 0 && hasConnection(d))
 					blipsOutgoing |= ord;
@@ -722,8 +721,8 @@ class Cell {
 
 		// If we're the server, create new outgoing blips once in a while.
 		if (isRoot && count % 6 == 0) {
-			for (int c = 0; c < Dir.cardinals.length; ++c) {
-				Dir d = Dir.cardinals[c];
+			for (int c = 0; c < CellDirection.cardinals.length; ++c) {
+				CellDirection d = CellDirection.cardinals[c];
 				int ord = d.ordinal();
 				if (hasConnection(d))
 					blipsOutgoing |= ord;
@@ -738,8 +737,8 @@ class Cell {
 	 * Pass on all blips which were outgoing onto their next cell.
 	 */
 	void transferBlips() {
-		for (int c = 0; c < Dir.cardinals.length; ++c) {
-			Dir d = Dir.cardinals[c];
+		for (int c = 0; c < CellDirection.cardinals.length; ++c) {
+			CellDirection d = CellDirection.cardinals[c];
 			int ord = d.ordinal();
 			if ((blipsTransfer & ord) != 0) {
 				Cell n = next(d);
@@ -791,9 +790,9 @@ class Cell {
 		// Draw the background tile.
 		{
 			Image bgImage = Image.BG;
-			if (connectedDirs == Dir.NONE)
+			if (connectedDirs == CellDirection.NONE)
 				bgImage = Image.NOTHING;
-			else if (connectedDirs == Dir.FREE)
+			else if (connectedDirs == CellDirection.FREE)
 				bgImage = Image.EMPTY;
 			else if (isLocked)
 				bgImage = Image.LOCKED;
@@ -815,7 +814,7 @@ class Cell {
 		}
 
 		// If we're not empty, draw the cables / equipment.
-		if (connectedDirs != Dir.FREE && connectedDirs != Dir.NONE) {
+		if (connectedDirs != CellDirection.FREE && connectedDirs != CellDirection.NONE) {
 			if (!isBlind) {
 				// We need to rotate the drawing matrix if the cable is
 				// rotated.
@@ -912,12 +911,12 @@ class Cell {
 		int indexOut = Math.round((float) (nblips - 1) * (1 - frac)) % nblips;
 		if (indexOut < 0)
 			indexOut = 0;
-		for (int c = 0; c < Dir.cardinals.length; ++c)
+		for (int c = 0; c < CellDirection.cardinals.length; ++c)
 		{
-			Dir d = Dir.cardinals[c];
+			CellDirection d = CellDirection.cardinals[c];
 			int ord = d.ordinal();
-			final int xoff = Dir.cardinalOffs[c][0];
-			final int yoff = Dir.cardinalOffs[c][1];
+			final int xoff = CellDirection.cardinalOffs[c][0];
+			final int yoff = CellDirection.cardinalOffs[c][1];
 			if ((blipsIncoming & ord) != 0)
 			{
 				final float inp = (1.0f - frac) * cellWidth / 2f;
@@ -997,7 +996,7 @@ class Cell {
 	 */
 	void restoreState(Bundle map)
 	{
-		connectedDirs 	 = Dir.valueOf(map.getString("connectedDirs"));
+		connectedDirs 	 = CellDirection.valueOf(map.getString("connectedDirs"));
 		rotateAngle 	 = map.getFloat("currentAngle");
 		highlightPos	 = map.getInt("highlightPos");
 		isConnected		 = map.getBoolean("isConnected");
@@ -1115,7 +1114,7 @@ class Cell {
 	private Cell nextR;
 
 	// The directions in which this cell is isConnected. This is set up at the start of each game
-	private Dir connectedDirs;
+	private CellDirection connectedDirs;
 
 	// If we're currently rotating, the rotation target angle
 	// clockwise positive, anti negative; the time in ms at which we started;

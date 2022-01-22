@@ -49,93 +49,7 @@ import com.jimnastic.modernscramblednet.BoardView.Skill;
 
 public class MainActivity extends AppCompatActivity
 {
-
-    // Current state of the game
-    enum State
-    {
-        NEW,
-        RESTORED,
-        INIT,
-        PAUSED,
-        RUNNING,
-        SOLVED,
-        ABORTED;
-
-        static State getValue(int ordinal)
-        {
-            return states[ordinal];
-        }
-
-        private static State[] states = values();
-    }
-
-    // The sounds that we make
-    enum Sound
-    {
-        START(R.raw.start),
-        CLICK(R.raw.click),
-        TURN(R.raw.turn),
-        CONNECT(R.raw.connect),
-        POP(R.raw.pop),
-        WIN(R.raw.win);
-
-        Sound(int res)
-        {
-            soundRes = res;
-        }
-
-        private final int soundRes; // Resource ID for the sound file
-        private int soundId = 0; // Sound ID for playing
-    }
-
-    // Sound play mode
-    enum SoundMode
-    {
-        NONE(R.id.sounds_off),
-        QUIET(R.id.sounds_qt),
-        FULL(R.id.sounds_on);
-
-        SoundMode(int res)
-        {
-            menuId = res;
-        }
-
-        private int menuId; // ID of the corresponding menu item
-    }
-
-    //Create and show an about dialog
-    public void showAbout()
-    {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.about_text)
-                .setTitle(R.string.title)
-                .setNegativeButton(R.string.button_close, (dialog, id) ->
-        {
-            dialog.cancel();
-        });
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
-
-    // ******************************************************************** //
-    // Activity Setup.
-    // ******************************************************************** //
-
-    /**
-     * Called when the activity is starting. This is where most initialization should go: calling
-     * setContentView(int) to inflate the activity's UI, etc
-     * <p>
-     * You can call finish() from within this function, in which case onDestroy() will be
-     * immediately called without any of the rest of the activity lifecycle executing
-     * <p>
-     * Derived classes must call through to the super class's implementation of this method. If they
-     * do not, an exception will be thrown
-     *
-     * @param savedInstanceState If the activity is being re-initialized after previously being
-     *                           shut down then this Bundle contains the data it most recently
-     *                           supplied in onSaveInstanceState(Bundle). Note: Otherwise it is
-     *                           null.
-     */
+    //This is the first thing that happens when app starts
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -145,29 +59,45 @@ public class MainActivity extends AppCompatActivity
 
         appResources = getResources();
 
+        Log.i(TAG, "MainActivity.onCreate() creates new MainActivity.GameTimer()");
         gameTimer = new GameTimer();
 
         // Create string formatting buffers
         clicksText = new StringBuilder(10);
         timeText = new StringBuilder(10);
 
+        SharedPreferences newPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        /* **** Custom board size Setup *****/
+        SettingsActivity.EasyHeight = Integer.parseInt(newPrefs.getString("EasyHeightPreference","5"));
+        SettingsActivity.EasyWidth = Integer.parseInt(newPrefs.getString("EasyWidthPreference","5"));
+        /* **** End custom board size Setup *****/
+
         // Create the GUI for the game
+        Log.i(TAG, "MainActivity.onCreate().setContentView() using R.layout.mainactivity");
+        Log.i(TAG, "**************************************************************");
+        Log.i(TAG, "We somehow get from MainActivity to BoardView constructor here");
         setContentView(R.layout.mainactivity);
+        Log.i(TAG, "**************************************************************");
+
+
+        Log.i(TAG, "MainActivity.onCreate() runs MainActivity.setupGui()");
         setupGui();
 
         // Restore our preferences
         SharedPreferences prefs = getPreferences(0);
-        SharedPreferences newPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         /* **** Sound Setup *****/
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
         SettingsActivity.SoundString = newPrefs.getString("SoundPreference", "FULL");
         soundMode = SettingsActivity.SoundState();
+        Log.i(TAG, "MainActivity.onCreate() runs MainActivity.createSoundPool()");
         soundPool = createSoundPool();
         /* **** End Sound Setup *****/
 
         /* **** Animation Setup *****/
         SettingsActivity.AnimationState = newPrefs.getBoolean("AnimationPreference",true);
+        Log.i(TAG, "MainActivity.onCreate() runs BoardView.setAnimEnable()");
         boardView.setAnimEnable(SettingsActivity.AnimationState);
         /* **** End Animation Setup *****/
 
@@ -186,13 +116,84 @@ public class MainActivity extends AppCompatActivity
                 gameSkill = Skill.valueOf(skill);
             if (gameSkill == null)
                 gameSkill = Skill.NOVICE;
-            gameState = State.NEW;
+            gameState = GameState.NEW;
         } else
         {
             // Save our restored game state
             restoredGameState = gameState;
-            gameState = State.RESTORED;
+            gameState = GameState.RESTORED;
         }
+
+        Log.i(TAG, "End MainActivity.onCreate()");
+    }
+
+
+
+    // #2 - Called from MainActivity.onCreate()
+    // Set up the GUI for the game. Add handlers and animations where needed
+    private void setupGui()
+    {
+        Log.v(MainActivity.TAG, "MainActivity.setupGui.findViewById(" + R.id.view_switcher + ")");
+        viewSwitcher = findViewById(R.id.view_switcher);
+
+        Log.v(MainActivity.TAG, "MainActivity.setupGui.findViewById(" + R.id.splash_text + ")");
+        splashText = findViewById(R.id.splash_text);
+
+        Log.v(MainActivity.TAG, "MainActivity.setupGui.findViewById(" + R.id.board_view + ")");
+        boardView = findViewById(R.id.board_view);
+
+        Log.v(MainActivity.TAG, "MainActivity.setupGui.findViewById(" + R.id.status_clicks + ")");
+        statusClicks = findViewById(R.id.status_clicks);
+
+        Log.v(MainActivity.TAG, "MainActivity.setupGui.findViewById(" + R.id.status_mode + ")");
+        statusMode = findViewById(R.id.status_mode);
+
+        Log.v(MainActivity.TAG, "MainActivity.setupGui.findViewById(" + R.id.status_time + ")");
+        statusTime = findViewById(R.id.status_time);
+
+        // Set up the splash text view to call wakeUp() when the user taps the screen
+        splashText.setOnTouchListener((v, event) ->
+        {
+            if (event.getAction() == MotionEvent.ACTION_DOWN)
+            {
+                MainActivity.this.wakeUp();
+                v.performClick();
+            }
+            return true;
+        });
+    }
+
+    // #3 - Called from MainActivity.onCreate()
+    //Create a SoundPool containing the app's sound effects
+    private SoundPool createSoundPool()
+    {
+        SoundPool pool = new SoundPool.Builder()
+                .setMaxStreams(3)
+                .build();
+        for (Sound sound : Sound.values())
+            sound.soundId = pool.load(this, sound.soundRes, 1);
+
+        return pool;
+    }
+
+    // This class implements the game clock. All it does is update the status each tick
+    private final class GameTimer extends Timer
+    {
+        GameTimer()
+        {
+            // Tick every 0.25 s
+            super(250);
+        }
+
+        @Override
+        protected boolean step(int count, long time)
+        {
+            updateStatus();
+
+            // Run until explicitly stopped
+            return false;
+        }
+
     }
 
     /**
@@ -286,25 +287,25 @@ public class MainActivity extends AppCompatActivity
         soundMode = SettingsActivity.SoundState();
 
         // If we restored a state, go to that state. Otherwise start at the welcome screen
-        if (gameState == State.NEW)
+        if (gameState == GameState.NEW)
         {
             Log.d(TAG, "onResume() NEW: init");
-            setState(State.INIT, true);
-        } else if (gameState == State.RESTORED)
+            setState(GameState.INIT, true);
+        } else if (gameState == GameState.RESTORED)
         {
             Log.d(TAG, "onResume() RESTORED: set " + restoredGameState);
             setState(restoredGameState, true);
 
             // If we restored an aborted state, that means we were starting a game. Kick it off again
-            if (restoredGameState == State.ABORTED)
+            if (restoredGameState == GameState.ABORTED)
             {
                 Log.d(TAG, "onResume() RESTORED ABORTED: start");
                 startGame(null);
             }
-        } else if (gameState == State.PAUSED)
+        } else if (gameState == GameState.PAUSED)
         {
             // We just paused without closing down. Resume
-            setState(State.RUNNING, true);
+            setState(GameState.RUNNING, true);
         } else
         {
             Log.e(TAG, "onResume() !!" + gameState + "!!: init");
@@ -395,8 +396,8 @@ public class MainActivity extends AppCompatActivity
         boardView.onPause();
 
         // Pause the game. Don't show a splash screen because the game is going away
-        if (gameState == State.RUNNING)
-            setState(State.PAUSED, false);
+        if (gameState == GameState.RUNNING)
+            setState(GameState.PAUSED, false);
     }
 
     /**
@@ -453,27 +454,7 @@ public class MainActivity extends AppCompatActivity
     // GUI Creation.
     // ******************************************************************** //
 
-    // Set up the GUI for the game. Add handlers and animations where needed
-    private void setupGui()
-    {
-        viewSwitcher = findViewById(R.id.view_switcher);
-        splashText = findViewById(R.id.splash_text);
-        boardView = findViewById(R.id.board_view);
-        statusClicks = findViewById(R.id.status_clicks);
-        statusMode = findViewById(R.id.status_mode);
-        statusTime = findViewById(R.id.status_time);
 
-        // Set up the splash text view to call wakeUp() when the user taps the screen
-        splashText.setOnTouchListener((v, event) ->
-        {
-            if (event.getAction() == MotionEvent.ACTION_DOWN)
-            {
-                MainActivity.this.wakeUp();
-                v.performClick();
-            }
-            return true;
-        });
-    }
 
     // ******************************************************************** //
     // Menu Management
@@ -517,7 +498,7 @@ public class MainActivity extends AppCompatActivity
 
     private void selectCurrentSkill()
     {
-        // Set the selected skill menu item to the current skill.
+        // Set the selected skill menu item to the current skill
         if (mainMenu != null)
         {
             MenuItem skillItem = mainMenu.findItem(gameSkill.id);
@@ -526,21 +507,9 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    /*private void selectSoundMode()
-    {
-        // Set the sound enable menu item to the current state.
-        if (mainMenu != null)
-        {
-            int id = soundMode.menuId;
-            MenuItem soundItem = mainMenu.findItem(id);
-            if (soundItem != null)
-                soundItem.setChecked(true);
-        }
-    }*/
-
     void selectAutosolveMode(boolean solving)
     {
-        // Set the autosolve menu item to the current state.
+        // Set the autosolve menu item to the current state
         if (mainMenu != null)
         {
             MenuItem solveItem = mainMenu.findItem(R.id.menu_autosolve);
@@ -558,68 +527,58 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
-     * This hook is called whenever an item in your options menu is selected.
-     * Derived classes should call through to the base class for it to perform
-     * the default menu handling. (True?)
+     * This hook is called whenever an item in your options menu is selected. Derived classes should
+     * call through to the base class for it to perform the default menu handling. (True?)
      *
-     * @param item The menu item that was selected.
-     * @return false to have the normal processing happen.
+     * @param item The menu item that was selected
+     * @return false to have the normal processing happen
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
-        switch (item.getItemId())
-        {
-            case R.id.menu_new:
-                startGame(null);
-                break;
-            case R.id.menu_pause:
-                setState(State.PAUSED, true);
-                break;
-            case R.id.menu_scores:
-                // Launch the high scores activity as a subactivity.
-                setState(State.PAUSED, false);
-                Intent sIntent = new Intent();
-                sIntent.setClass(this, ScoreList.class);
-                startActivity(sIntent);
-                break;
-            case R.id.menu_help:
-                // Launch the help activity as a subactivity.
-                setState(State.PAUSED, false);
-                Intent hIntent = new Intent();
-                hIntent.setClass(this, HelpActivity.class);
-                startActivity(hIntent);
-                break;
-            case R.id.menu_about:
-                showAbout();
-                break;
-            case R.id.skill_novice:
-                startGame(Skill.NOVICE);
-                break;
-            case R.id.skill_normal:
-                startGame(Skill.NORMAL);
-                break;
-            case R.id.skill_expert:
-                startGame(Skill.EXPERT);
-                break;
-            case R.id.skill_master:
-                startGame(Skill.MASTER);
-                break;
-            case R.id.skill_insane:
-                startGame(Skill.INSANE);
-                break;
-            case R.id.menu_autosolve:
-                solverUsed = true;
-                boardView.autosolve();
-                break;
-            case R.id.menu_settings:
-                Intent settingsIntent = new Intent();
-                settingsIntent.setClass(this, SettingsActivity.class);
-                startActivity(settingsIntent);
-            default:
-                return super.onOptionsItemSelected(item);
-        }
+        int menuID = item.getItemId();
 
+        if (menuID == R.id.menu_new)
+            startGame(null);
+        else if (menuID == R.id.menu_pause)
+            setState(GameState.PAUSED, true);
+        else if (menuID == R.id.menu_scores)
+        {
+            setState(GameState.PAUSED, false);
+            Intent sIntent = new Intent();
+            sIntent.setClass(this, ScoreList.class);
+            startActivity(sIntent);
+        }
+        else if (menuID == R.id.menu_help)
+        {
+            setState(GameState.PAUSED, false);
+            Intent hIntent = new Intent();
+            hIntent.setClass(this, HelpActivity.class);
+            startActivity(hIntent);
+        }
+        else if (menuID == R.id.menu_about)
+            showAbout();
+        else if (menuID == R.id.skill_novice)
+            startGame(Skill.NOVICE);
+        else if (menuID == R.id.skill_normal)
+            startGame(Skill.NORMAL);
+        else if (menuID == R.id.skill_expert)
+            startGame(Skill.EXPERT);
+        else if (menuID == R.id.skill_master)
+            startGame(Skill.MASTER);
+        else if (menuID == R.id.skill_insane)
+            startGame(Skill.INSANE);
+        else if (menuID == R.id.menu_autosolve)
+        {
+            solverUsed = true;
+            boardView.autosolve();
+        }
+        else if (menuID == R.id.menu_settings)
+        {
+            Intent settingsIntent = new Intent();
+            settingsIntent.setClass(this, SettingsActivity.class);
+            startActivity(settingsIntent);
+        }
         return true;
     }
 
@@ -650,14 +609,14 @@ public class MainActivity extends AppCompatActivity
     {
         // If we are paused, just go to running
         // Otherwise (in the welcome or game over screen), start a new game
-        if (gameState == State.PAUSED)
-            setState(State.RUNNING, true);
+        if (gameState == GameState.PAUSED)
+            setState(GameState.RUNNING, true);
         else
             startGame(null);
     }
 
     // Create a listener for the user starting the game
-    private final DialogInterface.OnClickListener startGameListener = (arg0, arg1) -> setState(State.RUNNING, true);
+    private final DialogInterface.OnClickListener startGameListener = (arg0, arg1) -> setState(GameState.RUNNING, true);
 
     /**
      * Start a game at a given skill level, or the previous skill level. The skill level chosen is
@@ -668,7 +627,7 @@ public class MainActivity extends AppCompatActivity
     public void startGame(BoardView.Skill sk)
     {
         // Abort any existing game, so we know we're not just continuing
-        setState(State.ABORTED, false);
+        setState(GameState.ABORTED, false);
 
         // Sort out the previous and new skills. Default to previous if no new skill
         BoardView.Skill prevSkill = gameSkill;
@@ -704,7 +663,7 @@ public class MainActivity extends AppCompatActivity
                     .setPositiveButton(R.string.button_ok, startGameListener)
                     .show();
         else
-            setState(State.RUNNING, true);
+            setState(GameState.RUNNING, true);
     }
 
     // ******************************************************************** //
@@ -714,7 +673,7 @@ public class MainActivity extends AppCompatActivity
     //Post a state change
     void postState()
     {
-        stateHandler.sendEmptyMessage(State.SOLVED.ordinal());
+        stateHandler.sendEmptyMessage(GameState.SOLVED.ordinal());
     }
 
     private Handler stateHandler = new Handler(Looper.getMainLooper())
@@ -722,7 +681,7 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void handleMessage(Message m)
         {
-            setState(State.getValue(m.what), true);
+            setState(GameState.getValue(m.what), true);
         }
     };
 
@@ -732,7 +691,7 @@ public class MainActivity extends AppCompatActivity
      * @param state      The state to go into
      * @param showSplash If true, show the "pause" screen if appropriate. Otherwise don't
      */
-    private void setState(State state, boolean showSplash)
+    private void setState(GameState state, boolean showSplash)
     {
         Log.i(TAG, "setState: " + state + " (was " + gameState + ")");
 
@@ -741,7 +700,7 @@ public class MainActivity extends AppCompatActivity
             return;
 
         // Save the previous state, and change
-        State prev = gameState;
+        GameState prev = gameState;
         gameState = state;
 
         // Handle the state change
@@ -752,6 +711,7 @@ public class MainActivity extends AppCompatActivity
                 // Should never get these
                 break;
             case INIT:
+                Log.i(TAG, "MainActivity.setState() - gameState = INIT");
                 gameTimer.stop();
                 if (showSplash)
                     showSplashText(R.string.splash_text);
@@ -768,7 +728,7 @@ public class MainActivity extends AppCompatActivity
                 isSolved = true;
 
                 // Keep running
-                gameState = State.RUNNING;
+                gameState = GameState.RUNNING;
                 break;
             case ABORTED:
                 // Aborted is followed by something else, so don't display anything
@@ -781,7 +741,7 @@ public class MainActivity extends AppCompatActivity
                 break;
             case RUNNING:
                 // Set us going, if this is a new game
-                if (prev != State.RESTORED && prev != State.PAUSED)
+                if (prev != GameState.RESTORED && prev != GameState.PAUSED)
                 {
                     boardView.setupBoard(gameSkill);
                     isSolved = false;
@@ -997,17 +957,7 @@ public class MainActivity extends AppCompatActivity
     // Sound
     // ******************************************************************** //
 
-    //Create a SoundPool containing the app's sound effects
-    private SoundPool createSoundPool()
-    {
-        SoundPool pool = new SoundPool.Builder()
-                .setMaxStreams(3)
-                .build();
-        for (Sound sound : Sound.values())
-            sound.soundId = pool.load(this, sound.soundRes, 1);
 
-        return pool;
-    }
 
     /**
      * Post a sound to be played on the main app thread.
@@ -1082,7 +1032,7 @@ public class MainActivity extends AppCompatActivity
     {
         // Get the skill level and game state
         gameSkill = Skill.valueOf(savedInstanceState.getString("gameSkill"));
-        gameState = State.valueOf(savedInstanceState.getString("gameState"));
+        gameState = GameState.valueOf(savedInstanceState.getString("gameState"));
         isSolved = savedInstanceState.getBoolean("isSolved");
 
         // Restore the state of the game board
@@ -1103,35 +1053,27 @@ public class MainActivity extends AppCompatActivity
     // Private Types
     // ******************************************************************** //
 
-    // This class implements the game clock. All it does is update the status each tick
-    private final class GameTimer extends Timer
+
+
+    //Create and show an about dialog
+    public void showAbout()
     {
-        GameTimer()
-        {
-            // Tick every 0.25 s
-            super(250);
-        }
-
-        @Override
-        protected boolean step(int count, long time)
-        {
-            updateStatus();
-
-            // Run until explicitly stopped
-            return false;
-        }
-
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.about_text)
+                .setTitle(R.string.title)
+                .setNegativeButton(R.string.button_close, (dialog, id) -> dialog.cancel());
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     // ******************************************************************** //
     // Class Data
     // ******************************************************************** //
 
-    private static final String TAG = "netscramble"; // Debugging tag
+    public static final String TAG = "\t\tScrambleLog"; // Debugging tag
     private Resources appResources;                  // The app's resources
-
     private BoardView.Skill gameSkill;               // The currently selected skill level
-    private State gameState;                         // The state of the current game
+    private GameState gameState;                         // The state of the current game
     private SoundPool soundPool;                     // Sound pool used for sound effects
     private GameTimer gameTimer;                     // Timer used to time the game
     private SoundMode soundMode;                     // Current sound mode
@@ -1158,8 +1100,8 @@ public class MainActivity extends AppCompatActivity
     // The menu used to select the skill level. We keep this so we can set the selected item
     private Menu mainMenu;
 
-    // When gameState == State.RESTORED, this is our restored game state.
-    private State restoredGameState;
+    // When gameState == State.RESTORED, this is our restored game state
+    private GameState restoredGameState;
 
     // Flag whether the board has been solved. Once solved, the user can keep playing, but we don't
     // count score any more
@@ -1167,6 +1109,58 @@ public class MainActivity extends AppCompatActivity
 
     // The previous cell that was clicked. Used to detect multiple clicks on the same cell
     private Cell prevClickedCell = null;
+
+    // Current state of the game
+    enum GameState
+    {
+        NEW,
+        RESTORED,
+        INIT,
+        PAUSED,
+        RUNNING,
+        SOLVED,
+        ABORTED;
+
+        static GameState getValue(int ordinal)
+        {
+            return states[ordinal];
+        }
+
+        private static GameState[] states = values();
+    }
+
+    // The sounds that we make
+    enum Sound
+    {
+        START(R.raw.start),
+        CLICK(R.raw.click),
+        TURN(R.raw.turn),
+        CONNECT(R.raw.connect),
+        POP(R.raw.pop),
+        WIN(R.raw.win);
+
+        Sound(int res)
+        {
+            soundRes = res;
+        }
+
+        private final int soundRes; // Resource ID for the sound file
+        private int soundId = 0; // Sound ID for playing
+    }
+
+    // Sound play mode
+    enum SoundMode
+    {
+        NONE(),
+        QUIET(),
+        FULL();
+
+        SoundMode()
+        {
+            // ID of the corresponding menu item
+        }
+
+    }
 
 
 }

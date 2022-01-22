@@ -6,9 +6,9 @@ import android.os.SystemClock;
 
 
 /**
- * This class implements a simple periodic timer.
+ * This class implements a simple periodic timer
  */
-abstract class Timer
+public abstract class Timer
         extends Handler
 {
 
@@ -234,7 +234,24 @@ abstract class Timer
     // and stop(); start(true) resets it
     private long accumTime;
 
+    /////////////////// Taken from org.hermit.android.core.SurfaceRunner ///////////////////
 
+    // Base interface for the ticker we use to control the animation
+    public interface Ticker
+    {
+        // Stop this thread. There will be no new calls to tick() after this
+        void kill();
 
+        /**
+         * Stop this thread and wait for it to die.  When we return, it is guaranteed that tick()
+         * will never be called again
+         *
+         * Caution: if this is called from within tick(), deadlock is guaranteed
+         */
+        void killAndWait();
+
+        // Determine whether this ticker is still going
+        boolean isAlive();
+    }
 }
 
