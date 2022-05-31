@@ -18,15 +18,6 @@
         android:key="BoardSizePreference"
         app:title="@string/boardsize_header">
 
-        <EditTextPreference
-            android:key="EasyHeightPreference"
-            android:title="Easy Height"
-            app:useSimpleSummaryProvider="true" />
-        <EditTextPreference
-            android:key="EasyWidthPreference"
-            android:title="Easy Width"
-            app:useSimpleSummaryProvider="true" />
-
         <!--EditTextPreference
             app:key="Normal"
             app:title="@string/skill_normal"

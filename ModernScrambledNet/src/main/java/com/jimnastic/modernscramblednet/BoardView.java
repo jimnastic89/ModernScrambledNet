@@ -201,14 +201,6 @@ public class BoardView
 
         int width = display.widthPixels;
         int height = display.heightPixels;
-        Integer customWidth = SettingsActivity.EasyWidth;
-        Integer customHeight = SettingsActivity.EasyHeight;
-
-        if (customWidth != null)
-            Screen.HUGE.major = customWidth;
-        if (customHeight != null)
-            Screen.HUGE.minor = customHeight;
-
 
         if (width > height)
         {
@@ -392,6 +384,9 @@ public class BoardView
     {
         // Save the width and height of the playing board for this skill level, and the board
         // placement within the overall cell grid
+	// The grid sizes are the total number of cells on the screen and match the largest
+	// possible board size for the current screen size (currently always HUGE), the board
+	// sizes are the number of cells used in the current level
         boardWidth = Screen.HUGE.getBoardWidth(sk, gridWidth, gridHeight);
         boardHeight = Screen.HUGE.getBoardHeight(sk, gridWidth, gridHeight);
         boardStartX = (gridWidth - boardWidth) / 2;
