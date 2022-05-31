@@ -68,11 +68,6 @@ public class MainActivity extends AppCompatActivity
 
         SharedPreferences newPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        /* **** Custom board size Setup *****/
-        SettingsActivity.EasyHeight = Integer.parseInt(newPrefs.getString("EasyHeightPreference","5"));
-        SettingsActivity.EasyWidth = Integer.parseInt(newPrefs.getString("EasyWidthPreference","5"));
-        /* **** End custom board size Setup *****/
-
         // Create the GUI for the game
         Log.i(TAG, "MainActivity.onCreate().setContentView() using R.layout.mainactivity");
         Log.i(TAG, "**************************************************************");

@@ -15,8 +15,6 @@ import androidx.preference.PreferenceFragmentCompat;
 
 public class SettingsActivity extends AppCompatActivity
 {
-    public static Integer EasyHeight;
-    public static Integer EasyWidth;
     public static boolean AnimationState;
     public static String SoundString;
     public static MainActivity.SoundMode SoundState()
@@ -53,8 +51,6 @@ public class SettingsActivity extends AppCompatActivity
 
             Preference animation = findPreference("AnimationPreference");
             Preference sound = findPreference("SoundPreference");
-            Preference easyHeight = findPreference("EasyHeightPreference");
-            Preference easyWidth = findPreference("EasyWidthPreference");
 
             assert animation != null;
             animation.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
@@ -76,17 +72,6 @@ public class SettingsActivity extends AppCompatActivity
                 }
             });
 
-            easyHeight.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener()
-            {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue)
-                {
-                    EasyHeight = Integer.parseInt(newValue.toString());
-                    Log.i(MainActivity.TAG,"EasyHeight setting has been changed to: " + EasyHeight);
-
-                    return true;
-                }
-            });
         }
     }
 }
