@@ -16,6 +16,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+
+    dependenciesInfo {
+        includeInBundle false
+        includeInApk false
+    }
 }
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.4.0'
