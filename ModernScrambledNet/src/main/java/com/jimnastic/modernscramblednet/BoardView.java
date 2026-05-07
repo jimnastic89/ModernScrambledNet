@@ -10,6 +10,7 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.WindowManager;
 
 import com.jimnastic.modernscramblednet.MainActivity.Sound;
 
@@ -29,130 +30,8 @@ import java.util.Vector;
  * finger to select it. We therefore put a lot of work into figuring out how big the board should be
  */
 public class BoardView
-    extends SurfaceRunner
+        extends SurfaceRunner
 {
-    // #4 - Called from MainActivity.onCreate()
-    //Enable or disable the network animation
-    void setAnimEnable(boolean enable)
-    {
-        Log.v(MainActivity.TAG, "BoardView.setAnimEnable(" + enable + ")");
-        drawBlips = enable;
-    }
-
-    // ******************************************************************** //
-    // Public Types
-    // ******************************************************************** //
-
-    /**
-     * Enumeration defining a game skill level. Each enum member also stores the configuration
-     * parameters for that skill. We also introduce blind tiles, to make an insane level
-     */
-    enum Skill
-    {
-        // Skill, Menu item ID, brch, does board wrap?, cells with over this many connections are blind
-        NOVICE(R.string.skill_novice, R.id.skill_novice, 2, false, 9),
-        NORMAL(R.string.skill_normal, R.id.skill_normal, 2, false, 9),
-        EXPERT(R.string.skill_expert, R.id.skill_expert, 2, false, 9),
-        MASTER(R.string.skill_master, R.id.skill_master, 3, true, 9),
-        INSANE(R.string.skill_insane, R.id.skill_insane, 3, true, 3);
-
-        Skill(int lab, int i, int br, boolean w, int bd)
-        {
-            label = lab;
-            id = i;
-            branches = br;
-            wrapped = w;
-            blind = bd;
-        }
-
-        public final int label;         // Res. ID of the label for this skill
-        public final int id;            // Numeric ID for this skill level
-        public final int branches;      // Max branches off each square; at least 2
-        public final boolean wrapped;   // If true, network wraps around the edges
-        public final int blind;         // Squares with this many or more connections are blind
-    }
-
-    /**
-     * This enum defines the board sizes for the supported screen layouts
-     * <p>
-     * We have to deal with various screen sizes, and we want the cells to be big enough to touch.
-     * So, to set the board sizes, we choose either SMALL, MEDIUM, or LARGE based on the physical
-     * screen size. Then, sizes[skill][0] is the major grid size for that skill, and sizes[skill][1]
-     * is the minor grid size for that skill
-     */
-    enum Screen
-    {
-        // Width/Height
-        HUGE(17, 10, // Master/Insane
-             15, 8,   // Expert
-             11, 8,   // Normal
-             10, 8);  // Novice
-
-        Screen(int ml, int ms, int el, int es, int nl, int ns, int vl, int vs)
-        {
-            major = ml;
-            minor = ms;
-            sizes[Skill.INSANE.ordinal()][0] = ml;
-            sizes[Skill.INSANE.ordinal()][1] = ms;
-            sizes[Skill.MASTER.ordinal()][0] = ml;
-            sizes[Skill.MASTER.ordinal()][1] = ms;
-            sizes[Skill.EXPERT.ordinal()][0] = el;
-            sizes[Skill.EXPERT.ordinal()][1] = es;
-            sizes[Skill.NORMAL.ordinal()][0] = nl;
-            sizes[Skill.NORMAL.ordinal()][1] = ns;
-            sizes[Skill.NOVICE.ordinal()][0] = vl;
-            sizes[Skill.NOVICE.ordinal()][1] = vs;
-        }
-
-        // skill level, gw, gh
-        int getBoardWidth(Skill skill, int GridWidth, int GridHeight)
-        {
-            if (GridWidth > GridHeight)
-                return sizes[skill.ordinal()][0];
-            else
-                return sizes[skill.ordinal()][1];
-        }
-
-        int getBoardHeight(Skill skill, int GridWidth, int GridHeight)
-        {
-            if (GridWidth > GridHeight)
-                return sizes[skill.ordinal()][1];
-            else
-                return sizes[skill.ordinal()][0];
-        }
-
-        private int major;
-        private int minor;
-        private final int[][] sizes = new int[Skill.values().length][2];
-    }
-
-    // ******************************************************************** //
-    // Constructor
-    // ******************************************************************** //
-
-    /**
-     * Construct a board view
-     *
-     * @param context The context we're running in
-     * @param attrs   Our layout attributes
-     */
-    public BoardView(Context context, AttributeSet attrs)
-    {
-        super(context, attrs);
-        Log.i(MainActivity.TAG, "BoardView constructor");
-        Log.v(MainActivity.TAG, "BoardView(" + context + "," + attrs + ")");
-        try
-        {
-            MainActivity parent = (MainActivity) context;
-            init(parent);
-        } catch (ClassCastException e)
-        {
-            throw new IllegalStateException("BoardView must be part of NetScramble", e);
-        }
-    }
-
-
-
     /**
      * Initialise this board view
      *
@@ -160,17 +39,22 @@ public class BoardView
      */
     private void init(MainActivity parent)
     {
-        Log.i(MainActivity.TAG, "BoardView.init(" + parent + ")");
         parentApp = parent;
 
         // Animation delay
-        Log.i(MainActivity.TAG, "SurfaceRunner.animationDelay = 30");
         SurfaceRunner.animationDelay = 20;
         //setDelay(30);
+
+        findMatrix();
 
         // Calculate the size and shape of the cell matrix
         FindMaximumGridforScreenSize();
 
+        initMatrix();
+    }
+
+    private void initMatrix()
+    {
         // Create all the cells in the calculated board. In appSize() we will take care of
         // positioning them. Set the cell grid and root so we have a valid state to save
         Log.i(MainActivity.TAG, "Create board " + gridWidth + "x" + gridHeight);
@@ -193,6 +77,169 @@ public class BoardView
         setFocus(rootCell);
     }
 
+    // #4 - Called from MainActivity.onCreate()
+    //Enable or disable the network animation
+    void setAnimEnable(boolean enable)
+    {
+        drawBlips = enable;
+    }
+
+    // ******************************************************************** //
+    // Public Types
+    // ******************************************************************** //
+
+    /**
+     * Enumeration defining a game skill level. Each enum member also stores the configuration
+     * parameters for that skill. We also introduce blind tiles, to make an insane level
+     */
+    enum Skill
+    {
+        // Skill, Menu item ID, brch, does board wrap?, cells with over this many connections are blind
+        NOVICE(R.string.skill_novice, R.id.skill_novice, 2, false, 9),
+        NORMAL(R.string.skill_normal, R.id.skill_normal, 2, false, 9),
+        EXPERT(R.string.skill_expert, R.id.skill_expert, 2, false, 9),
+        MASTER(R.string.skill_master, R.id.skill_master, 3, true, 9),
+        INSANE(R.string.skill_insane, R.id.skill_insane, 3, true, 3);
+
+        Skill(int skillLevelLabel, int skillLevelId, int branches, boolean isBoardWrapped, int bd)
+        {
+            label = skillLevelLabel;
+            id = skillLevelId;
+            this.branches = branches;
+            wrapped = isBoardWrapped;
+            blind = bd;
+        }
+
+        public final int label;         // Res. ID of the label for this skill
+        public final int id;            // Numeric ID for this skill level
+        public final int branches;      // Max branches off each square; at least 2
+        public final boolean wrapped;   // If true, network wraps around the edges
+        public final int blind;         // Squares with this many or more connections are blind
+    }
+
+    /**
+     * This enum defines the board sizes for the supported screen layouts
+     * <p>
+     * We have to deal with various screen sizes, and we want the cells to be big enough to touch.
+     * So, to set the board sizes, we choose either SMALL, MEDIUM, or LARGE based on the physical
+     * screen size. Then, sizes[skill][0] is the major grid size for that skill, and sizes[skill][1]
+     * is the minor grid size for that skill
+     */
+    enum Screen
+    {
+        // Width/Height
+        SMALL(8, 6, 8, 6, 6, 6, 6, 4), // Like HVGA.
+        WSMALL(9, 6, 9, 6, 5, 6, 5, 4), // Like HVGA.
+        MEDIUM(11, 7, 11, 7, 9, 7, 5, 5), // VGA plus.
+        WMEDIUM(12, 7, 10, 7, 8, 7, 6, 5), // Wide VGA plus.
+        HUGE(17, 10, 15, 8, 11, 8, 7, 6); // WSVGA etc.
+
+        Screen(int ml, int ms, int el, int es, int nl, int ns, int vl, int vs)
+        {
+            major = ml;
+            minor = ms;
+            sizes[Skill.INSANE.ordinal()][0] = ml;
+            sizes[Skill.INSANE.ordinal()][1] = ms;
+            sizes[Skill.MASTER.ordinal()][0] = ml;
+            sizes[Skill.MASTER.ordinal()][1] = ms;
+            sizes[Skill.EXPERT.ordinal()][0] = el;
+            sizes[Skill.EXPERT.ordinal()][1] = es;
+            sizes[Skill.NORMAL.ordinal()][0] = nl;
+            sizes[Skill.NORMAL.ordinal()][1] = ns;
+            sizes[Skill.NOVICE.ordinal()][0] = vl;
+            sizes[Skill.NOVICE.ordinal()][1] = vs;
+        }
+
+        // skill level, gw, gh
+        int getBoardWidth(Skill skill, int GridWidth, int GridHeight)
+        {
+            int w;
+            if (GridWidth > GridHeight)
+                w = sizes[skill.ordinal()][0];
+            else
+                w = sizes[skill.ordinal()][1];
+            return Math.min(w, GridWidth);
+        }
+
+        int getBoardHeight(Skill skill, int GridWidth, int GridHeight)
+        {
+            int h;
+            if (GridWidth > GridHeight)
+                h = sizes[skill.ordinal()][1];
+            else
+                h = sizes[skill.ordinal()][0];
+            return Math.min(h, GridHeight);
+        }
+
+        private int major;
+        private int minor;
+        private final int[][] sizes = new int[Skill.values().length][2];
+    }
+
+    // ******************************************************************** //
+    // Constructor
+    // ******************************************************************** //
+
+    /**
+     * Construct a board view
+     *
+     * @param context The context we're running in
+     * @param attrs   Our layout attributes
+     */
+    public BoardView(Context context, AttributeSet attrs)
+    {
+        super(context, attrs);
+        try
+        {
+            MainActivity parent = (MainActivity) context;
+            init(parent);
+        } catch (ClassCastException e)
+        {
+            throw new IllegalStateException("BoardView must be part of NetScramble", e);
+        }
+    }
+
+    /**
+     * Find the size of board that can fit in the window.
+     */
+    private void findMatrix() {
+        WindowManager wm = (WindowManager) parentApp
+                .getSystemService(Context.WINDOW_SERVICE);
+        // Display disp = wm.getDefaultDisplay();
+        // int width = disp.getWidth();
+        // int height = disp.getHeight();
+        DisplayMetrics display = this.getResources().getDisplayMetrics();
+
+        int width = display.widthPixels;
+        int height = display.heightPixels;
+        int min = width < height ? width : height;
+        int max = width > height ? width : height;
+        float aspect = (float) max / (float) min;
+
+        if (min <= 400) {
+            if (aspect > 1.4f)
+                screenConfig = Screen.WSMALL;
+            else
+                screenConfig = Screen.SMALL;
+        } else if (min <= 500) {
+            if (aspect > 1.5f)
+                screenConfig = Screen.WMEDIUM;
+            else
+                screenConfig = Screen.MEDIUM;
+        } else
+            screenConfig = Screen.HUGE;
+
+        if (width > height) {
+            gridWidth = screenConfig.major;
+            gridHeight = screenConfig.minor;
+        } else {
+            gridWidth = screenConfig.minor;
+            gridHeight = screenConfig.major;
+        }
+        Log.v("TAG", "findMatrix: screen=" + width + "x" + height + " -> "
+                + screenConfig);
+    }
+
     //Find the size of board that can fit in the window
     private void FindMaximumGridforScreenSize()
     {
@@ -205,9 +252,15 @@ public class BoardView
         Integer customHeight = SettingsActivity.EasyHeight;
 
         if (customWidth != null)
+        {
             Screen.HUGE.major = customWidth;
+            Screen.HUGE.sizes[Skill.NOVICE.ordinal()][0] = customWidth;
+        }
         if (customHeight != null)
+        {
             Screen.HUGE.minor = customHeight;
+            Screen.HUGE.sizes[Skill.NOVICE.ordinal()][1] = customHeight;
+        }
 
 
         if (width > height)
@@ -247,6 +300,10 @@ public class BoardView
      * @param height The new height of the surface.
      * @param config The pixel format of the surface.
      */
+    private int lastAppWidth = -1;
+    private int lastAppHeight = -1;
+    private Bitmap.Config lastAppConfig = null;
+
     @SuppressWarnings("SuspiciousNameCombination")
     @Override
     protected void appSize(int width, int height, Bitmap.Config config)
@@ -255,6 +312,10 @@ public class BoardView
         // We usually get a zero-sized resize, which is useless; ignore it
         if (width < 1 || height < 1)
             return;
+
+        lastAppWidth = width;
+        lastAppHeight = height;
+        lastAppConfig = config;
 
         // Create our backing bitmap
         backingBitmap = getBitmap();
@@ -344,6 +405,20 @@ public class BoardView
     public void setupBoard(Skill sk)
     {
         Log.v(MainActivity.TAG, "BoardView.setupBoard()");
+
+        // Check if the board size has changed in the settings
+        int oldGridWidth = gridWidth;
+        int oldGridHeight = gridHeight;
+        FindMaximumGridforScreenSize();
+
+        if (gridWidth != oldGridWidth || gridHeight != oldGridHeight)
+        {
+            Log.i(MainActivity.TAG, "Board size changed, re-initializing matrix");
+            initMatrix();
+            if (lastAppWidth > 0 && lastAppHeight > 0)
+                appSize(lastAppWidth, lastAppHeight, lastAppConfig);
+        }
+
         autosolveStop();
         gameSkill = sk;
 
@@ -388,29 +463,26 @@ public class BoardView
      *
      * @param sk Skill level for the game; set the board up accordingly
      */
-    private void resetBoard(Skill sk)
-    {
-        // Save the width and height of the playing board for this skill level, and the board
-        // placement within the overall cell grid
-        boardWidth = Screen.HUGE.getBoardWidth(sk, gridWidth, gridHeight);
-        boardHeight = Screen.HUGE.getBoardHeight(sk, gridWidth, gridHeight);
+    private void resetBoard(Skill sk) {
+        // Save the width and height of the playing board for this skill
+        // level, and the board placement within the overall cell grid.
+        boardWidth = screenConfig.getBoardWidth(sk, gridWidth, gridHeight);
+        boardHeight = screenConfig.getBoardHeight(sk, gridWidth, gridHeight);
         boardStartX = (gridWidth - boardWidth) / 2;
         boardEndX = boardStartX + boardWidth;
         boardStartY = (gridHeight - boardHeight) / 2;
         boardEndY = boardStartY + boardHeight;
 
-        // Reset the cells. If we're wrapped, set the surrounding cells to None; else Free, to show
-        // that there's no wraparound
-        Log.i(MainActivity.TAG, "Reset board " + gridWidth + "x" + gridHeight);
+        // Reset the cells. If we're wrapped, set the surrounding cells
+        // to None; else Free, to show that there's no wraparound.
+        Log.i("TAG", "Reset board " + gridWidth + "x" + gridHeight);
         boolean wrap = gameSkill.wrapped;
         Cell u, d, l, r;
-        for (int x = 0; x < gridWidth; x++)
-        {
-            for (int y = 0; y < gridHeight; y++)
-            {
+        for (int x = 0; x < gridWidth; x++) {
+            for (int y = 0; y < gridHeight; y++) {
                 cellMatrix[x][y].reset(wrap ? Cell.CellDirection.NONE : Cell.CellDirection.FREE);
 
-                // Re-calculate who this cell's neighbours are
+                // Re-calculate who this cell's neighbours are.
                 u = d = l = r = null;
                 if (wrap || y > boardStartY)
                     u = cellMatrix[x][decr(y, boardStartY, boardEndY)];
@@ -455,11 +527,11 @@ public class BoardView
     private int createNet(Skill sk)
     {
         Log.i(MainActivity.TAG, "_" +
-                        "\r\n Drawing playable area on grid" +
-                        "\r\n x start = " + boardStartX +
-                        "\r\n x end   = " + boardEndX +
-                        "\r\n y start = " + boardStartY +
-                        "\r\n y end   = " + boardEndY);
+                "\r\n Drawing playable area on grid" +
+                "\r\n x start = " + boardStartX +
+                "\r\n x end   = " + boardEndX +
+                "\r\n y start = " + boardStartY +
+                "\r\n y end   = " + boardEndY);
 
         // Reset the cells' directions, and reset the root cell
         for (int x = boardStartX; x < boardEndX; x++)
@@ -912,7 +984,7 @@ public class BoardView
     {
         // Get ready to detect a long press
         longPressed = false;
-        longPressHandler.postDelayed(longPress, LONG_PRESS);
+        longPressHandler.postDelayed(longPress, SettingsActivity.LongPressDelay != null ? SettingsActivity.LongPressDelay : 1000);
     }
 
     /**
@@ -1465,8 +1537,6 @@ public class BoardView
     // Class Data.
     // ******************************************************************** //
 
-    private static final int LONG_PRESS = 650;// Time in ms for a long screen or centre-button press
-
     private static final long BLIPS_TIME = 300;// Time a blip takes to cross half a cell, in ms
 
     private static final long SOLVE_STEP_TIME = 800;// Rate at which we run moves in solve mode, in ms
@@ -1476,6 +1546,9 @@ public class BoardView
     private static final SecureRandom RandomNumberGenerator = new SecureRandom();// Random number generator for the game
 
     private MainActivity parentApp;// The parent application
+
+    // Screen configuration which matches the physical screen size.
+    private Screen screenConfig = null;
 
     //private Screen screenConfig = Screen.HUGE;// Screen configuration which matches the physical screen size
 

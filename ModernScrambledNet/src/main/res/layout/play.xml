@@ -1,67 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-	android:layout_height="match_parent"
-	android:layout_width="match_parent">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-	<LinearLayout
-		android:id="@+id/status_bar"
-		android:layout_height="20dp"
-		android:layout_width="match_parent"
-		android:orientation="horizontal">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/status_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingVertical="10dp"
+        android:background="?android:attr/windowBackground">
 
-		<Space
+		<TextView
+			android:id="@+id/status_clicks"
 			android:layout_width="wrap_content"
-			android:layout_height="match_parent"
-			android:layout_weight="1" />
+			android:layout_height="wrap_content"
+			android:gravity="center"
+			android:minWidth="100dp"
+			android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintEnd_toStartOf="@+id/status_mode"
+			app:layout_constraintHorizontal_chainStyle="packed"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toTopOf="parent"
+			tools:text="000"
+			android:textColor="?android:attr/textColorPrimary"/>
 
-		<LinearLayout
-			android:layout_width="0dp"
-			android:layout_height="match_parent"
-			android:layout_weight="1">
-			<TextView
-				android:layout_width="0dp"
-				android:layout_height="match_parent"
-				android:id="@+id/status_clicks"
-				android:layout_weight="1" />
-
-			<Space
-				android:layout_width="wrap_content"
-				android:layout_height="match_parent"
-				android:layout_weight="1" />
-
-			<TextView
-				android:layout_width="0dp"
-				android:layout_height="match_parent"
-				android:id="@+id/status_mode"
-				android:layout_weight="1" />
-
-			<Space
-				android:layout_width="wrap_content"
-				android:layout_height="match_parent"
-				android:layout_weight="1" />
-
-			<TextView
-				android:layout_width="0dp"
-				android:layout_height="match_parent"
-				android:id="@+id/status_time"
-				android:layout_weight="1" />
-		</LinearLayout>
-
-
-		<Space
+		<TextView
+			android:id="@+id/status_mode"
 			android:layout_width="wrap_content"
-			android:layout_height="match_parent"
-			android:layout_weight="1" />
+			android:layout_height="wrap_content"
+			android:layout_marginHorizontal="24dp"
+			android:gravity="center"
+			android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintEnd_toStartOf="@+id/status_time"
+			app:layout_constraintStart_toEndOf="@+id/status_clicks"
+			app:layout_constraintTop_toTopOf="parent"
+			tools:text="Normal"
+			android:textColor="?android:attr/textColorPrimary" />
 
-	</LinearLayout>
+		<TextView
+			android:id="@+id/status_time"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:gravity="center"
+			android:minWidth="100dp"
+			android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toEndOf="@+id/status_mode"
+			app:layout_constraintTop_toTopOf="parent"
+			tools:text="00:00"
+			android:textColor="?android:attr/textColorPrimary" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 	<com.jimnastic.modernscramblednet.BoardView
 		android:id="@+id/board_view"
-		android:layout_height="0dp"
 		android:layout_width="match_parent"
-		android:layout_weight="1"/>
-	
-</LinearLayout>
+		android:layout_height="0dp"
+		android:layout_weight="1" />
 
+</LinearLayout>

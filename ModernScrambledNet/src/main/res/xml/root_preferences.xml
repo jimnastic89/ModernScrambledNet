@@ -5,13 +5,18 @@
         app:key="AnimationPreference"
         app:title="@string/menu_anim"
         android:summaryOn="Network activity animations enabled"
-        android:summaryOff="Network activity animations disabled" />
+        android:summaryOff="Network activity animations disabled"/>
 
     <ListPreference
         android:key="SoundPreference"
-        android:title="Volume Level"
+        android:title="Volume level"
         android:entries="@array/SoundPreference_Names"
         android:entryValues="@array/SoundPreference_Values"
+        app:useSimpleSummaryProvider="true"/>
+
+    <EditTextPreference
+        android:key="LongPressPreference"
+        android:title="Long press delay"
         app:useSimpleSummaryProvider="true"/>
 
     <PreferenceCategory
@@ -20,12 +25,12 @@
 
         <EditTextPreference
             android:key="EasyHeightPreference"
-            android:title="Easy Height"
-            app:useSimpleSummaryProvider="true" />
+            android:title="Easy height"
+            app:useSimpleSummaryProvider="true"/>
         <EditTextPreference
             android:key="EasyWidthPreference"
-            android:title="Easy Width"
-            app:useSimpleSummaryProvider="true" />
+            android:title="Easy width"
+            app:useSimpleSummaryProvider="true"/>
 
         <!--EditTextPreference
             app:key="Normal"

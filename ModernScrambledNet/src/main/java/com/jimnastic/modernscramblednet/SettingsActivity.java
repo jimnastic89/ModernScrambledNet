@@ -19,9 +19,27 @@ public class SettingsActivity extends AppCompatActivity
     public static Integer EasyWidth;
     public static boolean AnimationState;
     public static String SoundString;
+    public static Integer LongPressDelay;
     public static MainActivity.SoundMode SoundState()
     {
-        return MainActivity.SoundMode.valueOf(SoundString);
+        if (SoundString == null)
+        {
+            return MainActivity.SoundMode.FULL;
+        }
+
+        try
+        {
+            return MainActivity.SoundMode.valueOf(SoundString);
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Handle legacy numeric values
+            if ("0".equals(SoundString)) return MainActivity.SoundMode.NONE;
+            if ("1".equals(SoundString)) return MainActivity.SoundMode.QUIET;
+            if ("2".equals(SoundString)) return MainActivity.SoundMode.FULL;
+
+            return MainActivity.SoundMode.FULL;
+        }
     }
 
     @Override
@@ -53,6 +71,7 @@ public class SettingsActivity extends AppCompatActivity
 
             Preference animation = findPreference("AnimationPreference");
             Preference sound = findPreference("SoundPreference");
+            Preference longPressDelay = findPreference("LongPressPreference");
             Preference easyHeight = findPreference("EasyHeightPreference");
             Preference easyWidth = findPreference("EasyWidthPreference");
 
@@ -60,7 +79,6 @@ public class SettingsActivity extends AppCompatActivity
             animation.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    Log.i(MainActivity.TAG,"Animation setting has been changed to: " + newValue);
                     AnimationState = (boolean) newValue;
                     return true;
                 }
@@ -71,19 +89,37 @@ public class SettingsActivity extends AppCompatActivity
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     SoundString = newValue.toString();
-                    Log.i(MainActivity.TAG,"Sound setting has been changed to: " + SoundString);
                     return true;
                 }
             });
 
+            assert longPressDelay != null;
+            longPressDelay.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    LongPressDelay = Integer.parseInt(newValue.toString());
+                    return true;
+                }
+            });
+
+            assert easyHeight != null;
             easyHeight.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener()
             {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue)
                 {
                     EasyHeight = Integer.parseInt(newValue.toString());
-                    Log.i(MainActivity.TAG,"EasyHeight setting has been changed to: " + EasyHeight);
+                    return true;
+                }
+            });
 
+            assert easyWidth != null;
+            easyWidth.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener()
+            {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue)
+                {
+                    EasyWidth = Integer.parseInt(newValue.toString());
                     return true;
                 }
             });

@@ -69,8 +69,10 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences newPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         /* **** Custom board size Setup *****/
-        SettingsActivity.EasyHeight = Integer.parseInt(newPrefs.getString("EasyHeightPreference","5"));
-        SettingsActivity.EasyWidth = Integer.parseInt(newPrefs.getString("EasyWidthPreference","5"));
+        SettingsActivity.SoundString    = newPrefs.getString("SoundPreference", "FULL");
+        SettingsActivity.LongPressDelay = Integer.parseInt(newPrefs.getString("LongPressPreference", "1000"));
+        SettingsActivity.EasyHeight     = Integer.parseInt(newPrefs.getString("EasyHeightPreference","5"));
+        SettingsActivity.EasyWidth      = Integer.parseInt(newPrefs.getString("EasyWidthPreference","5"));
         /* **** End custom board size Setup *****/
 
         // Create the GUI for the game
@@ -89,7 +91,6 @@ public class MainActivity extends AppCompatActivity
 
         /* **** Sound Setup *****/
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
-        SettingsActivity.SoundString = newPrefs.getString("SoundPreference", "FULL");
         soundMode = SettingsActivity.SoundState();
         Log.i(TAG, "MainActivity.onCreate() runs MainActivity.createSoundPool()");
         soundPool = createSoundPool();
