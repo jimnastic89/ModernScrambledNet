@@ -96,3 +96,22 @@ proguard/
 
 # Log Files
 *.log
+
+# Gradle
+**/.gradle/
+**/build/
+
+# Lock and cache files
+*.bin
+*.lock
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Keystore files (keep these out of version control)
+*.jks
+*.keystore
