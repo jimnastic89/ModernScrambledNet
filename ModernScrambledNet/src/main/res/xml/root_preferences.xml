@@ -4,6 +4,7 @@
     <SwitchPreferenceCompat
         app:key="AnimationPreference"
         app:title="@string/menu_anim"
+        android:defaultValue="true"
         android:summaryOn="Network activity animations enabled"
         android:summaryOff="Network activity animations disabled"/>
 
@@ -12,11 +13,13 @@
         android:title="Volume level"
         android:entries="@array/SoundPreference_Names"
         android:entryValues="@array/SoundPreference_Values"
+        android:defaultValue="FULL"
         app:useSimpleSummaryProvider="true"/>
 
     <EditTextPreference
         android:key="LongPressPreference"
         android:title="Long press delay"
+        android:defaultValue="1000"
         app:useSimpleSummaryProvider="true"/>
 
     <PreferenceCategory
@@ -26,10 +29,12 @@
         <EditTextPreference
             android:key="EasyHeightPreference"
             android:title="Easy height"
+            android:defaultValue="5"
             app:useSimpleSummaryProvider="true"/>
         <EditTextPreference
             android:key="EasyWidthPreference"
             android:title="Easy width"
+            android:defaultValue="5"
             app:useSimpleSummaryProvider="true"/>
 
         <!--EditTextPreference
